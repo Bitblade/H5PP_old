@@ -1,13 +1,21 @@
+from django.contrib.auth.models import User
 from django.test import TestCase
+
+from h5pp.h5p.library.H5PContentValidator import H5PContentValidator
+from h5pp.h5p.library.H5PCore import H5PCore
+from h5pp.h5p.library.H5PExport import H5PExport
+from h5pp.h5p.library.H5PStorage import H5PStorage
+from h5pp.h5p.library.H5PValidator import H5PValidator
 from h5pp.h5p.h5pmodule import *
 from h5pp.h5p.h5pclasses import H5PDjango
-from h5pp.h5p.library.h5pclasses import *
+from h5pp.h5p.library import *
 from h5pp.h5p.editor.h5peditorclasses import H5PDjangoEditor
 import django
 
 ##
 # Tests for h5p implementations classes
 ##
+from h5pp.models import h5p_libraries, h5p_libraries_libraries, h5p_contents
 
 
 class H5pModuleTestCase(TestCase):
@@ -119,18 +127,18 @@ class H5PClassesTestCase(TestCase):
         interface = H5PDjango(user)
 
         self.assertTrue(isinstance(
-            interface.h5pGetInstance('validator'), H5PValidator))
+            interface.getValidatorInstance(), H5PValidator))
         self.assertTrue(isinstance(
-            interface.h5pGetInstance('storage'), H5PStorage))
-        self.assertTrue(isinstance(interface.h5pGetInstance(
-            'contentvalidator'), H5PContentValidator))
+            interface.getStorageInstance(), H5PStorage))
         self.assertTrue(isinstance(
-            interface.h5pGetInstance('export'), H5PExport))
+            interface.getContentValidator(), H5PContentValidator))
         self.assertTrue(isinstance(
-            interface.h5pGetInstance('interface'), H5PDjango))
-        self.assertTrue(isinstance(interface.h5pGetInstance('core'), H5PCore))
+            interface.getExporter(), H5PExport))
         self.assertTrue(isinstance(
-            interface.h5pGetInstance('editor'), H5PDjangoEditor))
+            interface.getInterface(), H5PDjango))
+        self.assertTrue(isinstance(interface.getCore(), H5PCore))
+        self.assertTrue(isinstance(
+            interface.getEditor(), H5PDjangoEditor))
         print('test_get_instance ---- Check')
 
     def test_get_platform_info(self):
@@ -202,7 +210,7 @@ class H5PClassesTestCase(TestCase):
     def test_save_library_data(self):
         user = User.objects.get(username='titi')
         interface = H5PDjango(user)
-        libraryData = {
+        library_data = {
             'title': 'Test2',
             'majorVersion': 1,
             'minorVersion': 1,
@@ -227,14 +235,14 @@ class H5PClassesTestCase(TestCase):
             ],
 
         }
-        interface.save_library_data(libraryData)
+        interface.save_library_data(library_data)
         result = list(h5p_libraries.objects.filter(library_id=2).values())
 
         self.assertTrue(result[0]['machine_name'] == 'H5P.Test2')
 
-        libraryData['title'] = 'Test3'
-        libraryData['libraryId'] = 2
-        interface.save_library_data(libraryData, False)
+        library_data['title'] = 'Test3'
+        library_data['libraryId'] = 2
+        interface.save_library_data(library_data, False)
         result = list(h5p_libraries.objects.filter(library_id=2).values())
 
         self.assertTrue(result[0]['title'] == 'Test3')
@@ -392,7 +400,7 @@ class H5pEditorClassesTestCase(TestCase):
     def test_create_directories(self):
         user = User.objects.get(username='titi')
         interface = H5PDjango(user)
-        editor = interface.h5pGetInstance('editor')
+        editor = interface.getEditor()
 
         editor.createDirectories(1)
 

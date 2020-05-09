@@ -10,8 +10,8 @@ import zipfile
 from pathlib import Path
 from typing import Any
 
-from h5p.library.H5PContentValidator import H5PContentValidator
-from h5p.library.H5PCore import H5PCore
+from h5pp.h5p.library.H5PContentValidator import H5PContentValidator
+from h5pp.h5p.library import H5PCore
 
 
 class H5PValidator:
@@ -67,37 +67,31 @@ class H5PValidator:
     ##
     def __init__(self, framework, core):
         self.h5p_framework = framework
-        self.h5p_core = core
+        self.h5p_core: H5PCore = core
         self.h5p_content_validator = H5PContentValidator(self.h5p_framework, self.h5p_core)
 
-    ##
-    # Validates a .h5p file
-    ##
-    def is_valid_package(self, skip_content=False, upgrade_only=False):
-
-        # Create a temporary dir to extract package in.
-        tmp_dir = self.h5p_framework.getUploadedH5pFolderPath()
-
-        # MLD: Seems to be the complete path of the uploaded file
-        tmp_path = self.h5p_framework.getUploadedH5pPath()
+    def unpack_h5p(self, source, destination):
 
         # Only allow files with the .h5p extension.
-        if tmp_path.suffix.lower() != ".h5p":
+        if source.suffix.lower() != ".h5p":
             print("The file you uploaded is not a valid HTML5 Package (It does not have the .h5p file extension)")
-            self.h5p_core.delete_dir_recursive(tmp_dir)
+            self.h5p_core.delete_file_tree(destination)
             return False
 
-        zipf = zipfile.ZipFile(tmp_path, "r")
+        zipf = zipfile.ZipFile(source, "r")
         if zipf:
-            zipf.extractall(tmp_dir)
+            zipf.extractall(destination)
             zipf.close()
         else:
             print("The file you uploaded is not a valid HTML5 Package (We are unable to unzip it)")
-            self.h5p_core.delete_dir_recursive(tmp_dir)
+            self.h5p_core.delete_file_tree(destination)
             return False
 
-        os.remove(tmp_path)
+        os.remove(source)
+        return True
 
+
+    def process_h5p_content(self, tmp_dir, skip_content, upgrade_only):
         # Process content and libraries
         valid = True
         libraries = dict()
@@ -112,20 +106,16 @@ class H5PValidator:
             file_path = tmp_dir / f
             # Check for h5p.json file.
             if f.lower() == "h5p.json":
-                if skip_content:
-                    continue
+                if skip_content: continue
 
-                main_h5p_data = self.get_json_data(file_path)
-                if not main_h5p_data:
+                result = self.validate_main_h5p(file_path, f)
+                if not result:
                     valid = False
-                    print("Could not parse the main h5p.json file")
+                    continue
                 else:
-                    valid_h5p = self.is_valid_h5p_data(main_h5p_data, f, self.h5pRequired, self.h5pOptional)
-                    if valid_h5p:
-                        main_h5p_exists = True
-                    else:
-                        valid = False
-                        print("The main h5p.json file is not valid")
+                    main_h5p_data = result
+                    main_h5p_exists = True
+
 
             # Check for h5p.jpg ?
             elif f.lower() == "h5p.jpg":
@@ -135,28 +125,13 @@ class H5PValidator:
             elif f == "content":
                 # We do a separate skip_content check to avoid having the
                 # content folder being treated as a library.
-                if skip_content:
-                    continue
-                if not os.path.isdir(file_path):
-                    print("Invalid content folder")
+                if skip_content: continue
+                result = self.validate_content_directory(file_path)
+                if not result:
                     valid = False
                     continue
-
-                content_json_data = self.get_json_data(file_path / "content.json")
-
-                if not content_json_data:
-                    print("Could not find or parse the content.json file")
-                    valid = False
-                    continue
-                else:
-                    content_exists = True
-                    # In the future we might left the libraries provide
-                    # validation functions for content.json.
-
-                if not self.h5p_content_validator.validateContentFiles(file_path):
-                    # validateContentFiles adds potential errors to the queue
-                    valid = False
-                    continue
+                content_exists = True
+                content_json_data = result
 
             # The rest should be library folders.
             elif self.h5p_framework.mayUpdateLibraries():
@@ -165,30 +140,12 @@ class H5PValidator:
                     # included.
                     continue
 
-                library_h5_p_data = self.get_library_data(f, file_path, tmp_dir)
-
-                if library_h5_p_data:
-                    # Library"s directory name must be:
-                    # - <machineName>
-                    #      - or -
-                    # - <machineName>-<majorVersion>.<minorVersion>
-                    # where machineName, majorVersion and minorVersion is read
-                    # from library.json
-                    short_name = library_h5_p_data["machineName"]
-                    long_name = self.h5p_core.library_to_string(library_h5_p_data, True)
-                    if short_name != f and long_name != f:
-                        print("Library directory name must match machineName or machineName-majorVersion.minorVersion"
-                              " (from library.json). (Directory: %s %s %s %s)" %
-                              (f, library_h5_p_data["machineName"], library_h5_p_data["majorVersion"],
-                               library_h5_p_data["minorVersion"])
-                              )
-                        valid = False
-                        continue
-
-                    library_h5_p_data["uploadDirectory"] = file_path
-                    libraries[self.h5p_core.library_to_string(library_h5_p_data)] = library_h5_p_data
-                else:
+                result = self.validate_library(f, file_path, tmp_dir)
+                if not result:
                     valid = False
+                    continue
+
+                libraries[self.h5p_core.library_to_string(result)] = result
 
         if not skip_content:
             if not content_exists:
@@ -243,8 +200,74 @@ class H5PValidator:
             valid = H5PCore.empty(missing_libraries[0]) and valid
 
         if not valid:
-            self.h5p_core.delete_dir_recursive(tmp_dir)
+            self.h5p_core.delete_file_tree(tmp_dir)
         return valid
+
+    def validate_main_h5p(self, file_path, file):
+        main_h5p_data = self.get_json_data(file_path)
+        if not main_h5p_data:
+            print("Could not parse the main h5p.json file")
+            return False
+        else:
+            valid_h5p = self.is_valid_h5p_data(main_h5p_data, file, self.h5pRequired, self.h5pOptional)
+            if not valid_h5p:
+                print("The main h5p.json file is not valid")
+                return False
+
+        return main_h5p_data
+
+    def validate_content_directory(self, file_path):
+        if not os.path.isdir(file_path):
+            print("Invalid content folder")
+            return False
+
+        content_json_data = self.get_json_data(file_path / "content.json")
+
+        if not content_json_data:
+            print("Could not find or parse the content.json file")
+            return False
+
+        if not self.h5p_content_validator.validateContentFiles(file_path):
+            # validateContentFiles adds potential errors to the queue
+            return False
+
+        return content_json_data
+
+    def validate_library(self, f, file_path, tmp_dir):
+        library_h5_p_data = self.get_library_data(f, file_path, tmp_dir)
+
+        if not library_h5_p_data:
+            return False
+
+        # Library"s directory name must be:
+        # - <machineName>
+        #      - or -
+        # - <machineName>-<majorVersion>.<minorVersion>
+        # where machineName, majorVersion and minorVersion is read
+        # from library.json
+        short_name = library_h5_p_data["machineName"]
+        long_name = self.h5p_core.library_to_string(library_h5_p_data, True)
+        if short_name != f and long_name != f:
+            print("Library directory name must match machineName or machineName-majorVersion.minorVersion"
+                  " (from library.json). (Directory: %s %s %s %s)" %
+                  (f, library_h5_p_data["machineName"], library_h5_p_data["majorVersion"],
+                   library_h5_p_data["minorVersion"])
+                  )
+            return False
+
+        library_h5_p_data["uploadDirectory"] = file_path
+        return library_h5_p_data
+
+
+    ##
+    # Validates a .h5p file
+    ##
+    def is_valid_package(self, skip_content=False, upgrade_only=False):
+        # Create a temporary dir to extract package in.
+        tmp_dir = self.h5p_framework.getUploadedH5pFolderPath()
+        if not self.unpack_h5p(self.h5p_framework.getUploadedH5pPath(), tmp_dir): return False
+
+        return self.process_h5p_content(tmp_dir, skip_content, upgrade_only)
 
     ##
     # Validates a H5P library
@@ -276,16 +299,16 @@ class H5PValidator:
 
         if language_path.is_dir():
             for language_file in language_path.iterdir():
-                if str(language_file) in [".", ".."]:
+                if str(language_file.name) in [".", ".."]:
                     continue
-                if not re.search("^(?:-?[a-z]+){1,7}\.json$", str(language_file)):
+                if not re.search("^(?:-?[a-z]+){1,7}\.json$", str(language_file.name)):
                     print("Invalid language file %s in library %s" % (language_file, f))
                     return False
 
-                language_json = self.get_json_data(language_path / language_file, True)
+                language_json = self.get_json_data(language_file, True)
 
                 if not language_json:
-                    print("Invalid language file %s has been included in the library %s" % (language_file, f))
+                    print("Invalid language file %s has been included in the library %s" % (language_file.name, f))
                     return False
 
                 # parts[0] is the language code

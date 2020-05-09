@@ -1,7 +1,7 @@
 ##
 # self class is used for saving H5P files
 ##
-from h5p.library.H5PCore import H5PCore
+from h5pp.h5p.library import H5PCore
 
 
 class H5PStorage:
@@ -12,7 +12,7 @@ class H5PStorage:
     ##
     def __init__(self, framework, core):
         self.h5p_framework = framework
-        self.h5p_core = core
+        self.h5p_core: H5PCore = core
 
     ##
     # Saves a H5P file
@@ -58,7 +58,7 @@ class H5PStorage:
                 return False
 
             # Remove temp content folder
-            self.h5p_core.delete_dir_recursive(base_path)
+            self.h5p_core.delete_file_tree(base_path)
 
         return True
 
@@ -86,7 +86,7 @@ class H5PStorage:
                 else:
                     library["saveDependencies"] = False
                     # self is an older version, no need to save.
-                    self.h5p_core.delete_dir_recursive(library['uploadDirectory'])
+                    self.h5p_core.delete_file_tree(library['uploadDirectory'])
                     continue
 
             else:
@@ -106,7 +106,7 @@ class H5PStorage:
 
             # Remove tmp folder
             print(library['uploadDirectory'])
-            self.h5p_core.delete_dir_recursive(library["uploadDirectory"])
+            self.h5p_core.delete_file_tree(library["uploadDirectory"])
 
             if new:
                 new_libs += 1

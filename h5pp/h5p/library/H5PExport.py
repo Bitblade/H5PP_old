@@ -34,7 +34,7 @@ class H5PExport:
             self.h5p_core.fs.export_content(content["id"], tmp_path / 'content')
         except IOError as e:
             print("Error during the creation of content folder: %s" % e)
-            self.h5p_core.delete_dir_recursive(tmp_path)
+            self.h5p_core.delete_file_tree(tmp_path)
             return False
 
         # Update content.json with content from database
@@ -72,7 +72,7 @@ class H5PExport:
                 self.h5p_core.fs.export_library(library, tmp_path, export_folder)
             except IOError as e:
                 print("Error during export the required libraries: %s" % e)
-                self.h5p_core.delete_dir_recursive(tmp_path)
+                self.h5p_core.delete_file_tree(tmp_path)
                 return False
 
             # Do not add editor dependencies to h5p json.
@@ -110,7 +110,7 @@ class H5PExport:
 
         # Close zip and remove tmp dir
         zipf.close()
-        self.h5p_core.delete_dir_recursive(tmp_path)
+        self.h5p_core.delete_file_tree(tmp_path)
 
         try:
             # Save export

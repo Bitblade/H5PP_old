@@ -36,8 +36,8 @@ class h5p_libraries(models.Model):
     embed_types = models.CharField(null=False, blank=True, default='', max_length=255)
     preloaded_js = models.TextField(null=True, help_text='List of JavaScript files needed by the library')
     preloaded_css = models.TextField(null=True, help_text='List of Stylesheet files needed by the library')
-    drop_library_css = models.TextField(null=True, blank=True,
-                                        help_text='List of Libraries that should not have CSS included if this library is used')
+    drop_library_css = models.TextField(null=True, blank=True, help_text='List of Libraries that should not have '
+                                                                         'CSS included if this library is used')
     semantics = models.TextField(null=False, blank=True, help_text='The semantics definition in JSON format')
     restricted = models.PositiveSmallIntegerField(null=False, default=0,
                                                   help_text='If this library can be used to create new content')
@@ -83,13 +83,13 @@ class h5p_libraries_languages(models.Model):
         ordering = ['language_code', 'library_id']
         verbose_name = 'Library-language'
         verbose_name_plural = 'Libraries-languages'
-        unique_together = (('library_id', 'language_code'))
+        unique_together = ('library_id', 'language_code')
 
     def __unicode__(self):
         return self.language_code
 
     def __str__(self):
-        return "%s" % (self.language_code)
+        return "%s" % self.language_code
 
 
 # Stores information about where the h5p content is stored
@@ -164,7 +164,7 @@ class h5p_points(models.Model):
         ordering = ['content_id', 'uid']
         verbose_name = 'Score'
         verbose_name_plural = 'Scores'
-        unique_together = (('content_id', 'uid'))
+        unique_together = ('content_id', 'uid')
 
 
 # Stores user data about the content

@@ -167,7 +167,7 @@ class H5PEditorFile:
 
             # Add extension to name
             if 'data' in locals() or 'data' in globals():
-                name = name + self.extension
+                name += self.extension
             else:
                 matches = re.search('(?i)([a-z0-9]+)$', self.files.name)
                 if matches.group(1):

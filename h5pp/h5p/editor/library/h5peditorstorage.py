@@ -12,7 +12,7 @@ class H5PEditorStorage:
     ##
     def getLibraries(self, libraries=None):
         if libraries is not None:
-            librariesWithDetails = list()
+            libraries_with_details = list()
             for library in libraries:
                 details = h5p_libraries.objects.filter(machine_name=library['name'], major_version=library[
                                                        'majorVersion'], minor_version=library['minorVersion']).values('title', 'runnable', 'restricted', 'tutorial_url')
@@ -23,14 +23,17 @@ class H5PEditorStorage:
                     library['runnable'] = details['runnable']
                     library['restricted'] = True if details[
                         'restricted'] == 1 else False
-                    librariesWithDetails.append(library)
+                    libraries_with_details.append(library)
 
-            return librariesWithDetails
+            return libraries_with_details
 
         libraries = list()
-        librariesResult = h5p_libraries.objects.filter(runnable=1, semantics__isnull=False).extra(select={'name': 'machine_name', 'majorVersion': 'major_version', 'minorVersion': 'minor_version', 'tutorialUrl': 'tutorial_url'}).values(
+        libraries_result = h5p_libraries.objects.filter(runnable=1, semantics__isnull=False).extra(
+            select={'name': 'machine_name', 'majorVersion': 'major_version', 'minorVersion': 'minor_version',
+                    'tutorialUrl': 'tutorial_url'}
+        ).values(
             'name', 'title', 'majorVersion', 'minorVersion', 'tutorialUrl', 'restricted').order_by('title')
-        for library in librariesResult:
+        for library in libraries_result:
             libraries.append(library)
 
         return libraries

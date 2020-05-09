@@ -11,12 +11,12 @@ from typing import Union, Any, Dict
 
 import urllib3
 
-from h5p.library.H5PExport import H5PExport
-from h5p.library.H5PDefaultStorage import H5PDefaultStorage
-from h5p.library.h5pdevelopment import H5PDevelopment
+from h5pp.h5p.library.H5PExport import H5PExport
+from h5pp.h5p.library.H5PDefaultStorage import H5PDefaultStorage
+from h5pp.h5p.library.h5pdevelopment import H5PDevelopment
 from h5p_django import settings
 from django.template.defaultfilters import slugify
-from h5p.library.H5PContentValidator import H5PContentValidator
+from h5pp.h5p.library.H5PContentValidator import H5PContentValidator
 
 
 http = urllib3.PoolManager()
@@ -31,6 +31,7 @@ class H5PCore:
         "js/jquery.js", "js/h5p.js", "js/h5p-event-dispatcher.js", "js/h5p-x-api-event.js",
         "js/h5p-x-api.js", "js/h5p-content-type.js", "js/h5p-confirmation-dialog.js"]
 
+    # noinspection SpellCheckingInspection
     defaultContentWhitelist = "json png jpg jpeg gif bmp tif tiff svg eot ttf woff woff2 otf webm " \
                               "mp4 ogg mp3 txt pdf rtf doc docx xls xlsx ppt pptx odt ods odp xml " \
                               "csv diff patch swf md textile"
@@ -97,9 +98,9 @@ class H5PCore:
     ##
     def save_content(self, content, content_main_id=None) -> int:
         if "id" in content:
-            self.h5p_framework.updateContent(content, content_main_id)
+            self.h5p_framework.updateContent(content)
         else:
-            content["id"] = self.h5p_framework.insertContent(content, content_main_id)
+            content["id"] = self.h5p_framework.insertContent(content)
 
         # Some user data for content has to be reset when the content changes.
         self.h5p_framework.resetContentUserData(content_main_id if content_main_id else content["id"])
@@ -188,7 +189,7 @@ class H5PCore:
                 if matches:
                     slug = matches.group(1) + str(int(matches.group(2)) + 1)
                 else:
-                    slug = slug + "-2"
+                    slug += "-2"
 
             available = self.h5p_framework.isContentSlugAvailable(slug)
         return slug
@@ -386,7 +387,7 @@ class H5PCore:
                     dependencies[dependency_key] = {"library": dependency_library, "type": ptype}
                     next_weight = self.find_library_dependencies(dependencies, dependency_library, next_weight,
                                                                  ptype == "editor")
-                    next_weight = next_weight + 1
+                    next_weight += 1
                     dependencies[dependency_key]["weight"] = next_weight
                 else:
                     # self site is missing a dependency !

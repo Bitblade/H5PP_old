@@ -116,10 +116,10 @@ class H5PDefaultStorage:
 
         for file in source.iterdir():
             if file.name != '.git' and file.name != '.gitignore':
-                if (source/file).is_dir():
-                    self.copy_dir_recursive(source / file, destination / file)
+                if file.is_dir():
+                    self.copy_dir_recursive(file, destination / file.name)
                 else:
-                    shutil.copy(str(source/file), str(destination/file))
+                    shutil.copy(str(file), str(destination/file.name))
 
     def create_dir_recursive(self, path: Path):
         """
@@ -148,9 +148,9 @@ class H5PDefaultStorage:
         separator = '-' if format_as_folder_name else ' '
 
         if 'machine_name' in library:
-            return library['machine_name'] + separator + library['major_version'] + '.' + library['minor_version']
+            return library['machine_name'] + separator + str(library['major_version']) + '.' + str(library['minor_version'])
         else:
-            return library['machineName'] + separator + library['majorVersion'] + '.' + library['minorVersion']
+            return library['machineName'] + separator + str(library['majorVersion']) + '.' + str(library['minorVersion'])
 
     ##
     # Save files uploaded through the editor.
@@ -190,6 +190,7 @@ class H5PDefaultStorage:
                 for chunk in content.chunks():
                     pointer.write(chunk)
 
+    # TODO Merge with H5PCore::delete_file_tree?
     def delete_dir_recursive(self, path: Path):
         """
         Recursively removes directories (including content)

@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from h5pp.url_builder import join_url
+from url_builder import join_url
 
 
 class TestJoin_url(TestCase):

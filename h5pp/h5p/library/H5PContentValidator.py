@@ -2,6 +2,7 @@ import html
 import os
 import re
 
+
 ##
 # Functions for validating basic types from H5P library semantics.
 ##
@@ -15,9 +16,9 @@ class H5PContentValidator:
         self.h5pF = framework
         self.h5pC = core
         self.typeMap = {"text": "validateText", "number": "validateNumber", "boolean": "validateBoolean",
-            "list": "validateList", "group": "validateGroup", "file": "validateFile", "image": "validateImage",
-            "video": "validateVideo", "audio": "validateAudio", "select": "validateSelect",
-            "library": "validateLibrary"}
+                        "list": "validateList", "group": "validateGroup", "file": "validateFile",
+                        "image": "validateImage", "video": "validateVideo", "audio": "validateAudio",
+                        "select": "validateSelect", "library": "validateLibrary"}
         self.nextWeight = 1
 
         # Keep track of the libraries we load to avoid loading it multiple
@@ -44,7 +45,7 @@ class H5PContentValidator:
             tags = ['div', 'span', 'p', 'br'] + semantics['tags']
 
             if 'table' in tags:
-                tags = tags + ['tr', 'td', 'th', 'colgroup', 'thead', 'tbody', 'tfoot']
+                tags += ['tr', 'td', 'th', 'colgroup', 'thead', 'tbody', 'tfoot']
             if 'b' in tags and 'strong' not in tags:
                 tags.append('strong')
             if 'i' in tags and 'em' not in tags:
@@ -95,16 +96,16 @@ class H5PContentValidator:
         # Scan content directory for files, recurse into sub directories.
         files = list(set(os.listdir(contentPath)).difference([".", ".."]))
         valid = True
-        from h5p.library.H5PCore import H5PCore
+        from h5pp.h5p.library.H5PCore import H5PCore
         whitelist = self.h5pF.getWhitelist(isLibrary, H5PCore.defaultContentWhitelist,
-            H5PCore.defaultLibraryWhitelistExtras)
+                                           H5PCore.defaultLibraryWhitelistExtras)
 
         wl_regex = "^.*\.(" + re.sub(" ", "|", whitelist) + ")$"
 
         for f in files:
-            filePath = contentPath / f
-            if os.path.isdir(filePath):
-                valid = self.validateContentFiles(filePath, isLibrary) and valid
+            file_path = contentPath / f
+            if os.path.isdir(file_path):
+                valid = self.validateContentFiles(file_path, isLibrary) and valid
             else:
                 if not re.search(wl_regex, f.lower()):
                     print(("File \"%s\" not allowed. Only files with the following extension are allowed : %s" % (
@@ -129,8 +130,8 @@ class H5PContentValidator:
 
         # Check if number if withing allowed bounds even if step value is set.
         if 'step' in semantics:
-            textNumber = number - (semantics['min'] if 'min' in semantics else 0)
-            rest = textNumber % semantics['step']
+            text_number = number - (semantics['min'] if 'min' in semantics else 0)
+            rest = text_number % semantics['step']
             if rest != 0:
                 number = number - rest
 
@@ -150,7 +151,7 @@ class H5PContentValidator:
     def validateSelect(self, select, semantics):
         optional = semantics['optional'] if 'optional' in semantics else False
         strict = False
-        from h5p.library.H5PCore import H5PCore
+        from h5pp.h5p.library.H5PCore import H5PCore
         if 'options' in semantics and not H5PCore.empty(semantics['options']):
             # We have a strict set of options to choose from.
             strict = True
@@ -220,11 +221,11 @@ class H5PContentValidator:
 
         # Remove attributes that should not exist, they may contain JSON escape
         # code.
-        validKeys = ["path", "mime", "copyright"] + typeValidKeys
+        valid_keys = ["path", "mime", "copyright"] + typeValidKeys
         if 'extraAttributes' in semantics:
-            validKeys = validKeys + semantics['extraAttributes']
+            valid_keys = valid_keys + semantics['extraAttributes']
 
-        self.filterParams(f, validKeys)
+        self.filterParams(f, valid_keys)
 
         if 'width' in f:
             f['width'] = int(f['width'])
@@ -281,15 +282,15 @@ class H5PContentValidator:
         # "validateBySemantics" above)
         func = None
         field = None
-        isSubContent = True if 'isSubContent' in semantics and semantics['isSubContent'] else False
+        is_sub_content = True if 'isSubContent' in semantics and semantics['isSubContent'] else False
 
-        if len(semantics['fields']) == 1 and flatten and not isSubContent:
+        if len(semantics['fields']) == 1 and flatten and not is_sub_content:
             field = semantics['fields'][0]
             func = self.typeMap[field['type']]
             eval('self.' + func + '(group, field)')
         else:
             for key, value in list(group.items()):
-                if isSubContent and key == 'subContentId':
+                if is_sub_content and key == 'subContentId':
                     continue
 
                 found = False
@@ -306,13 +307,13 @@ class H5PContentValidator:
                     if func:
                         eval('self.' + func + '(value, foundField)')
                         if value is None:
-                            del (key)
+                            del key
                     else:
                         print(('H5P internal error: unknown content type "%s" in semantics. Removing content !' % field[
                             'type']))
-                        del (key)
+                        del key
                 else:
-                    del (key)
+                    del key
 
         if "optional" not in semantics:
             if group is None:
@@ -337,14 +338,15 @@ class H5PContentValidator:
 
         if not value['library'] in semantics['options']:
             message = None
-            machineNameArray = value['library'].split(' ')
-            machineName = machineNameArray[0]
+            machine_name_array = value['library'].split(' ')
+            machine_name = machine_name_array[0]
             for semanticsLibrary in semantics['options']:
-                semanticsMachineNameArray = semanticsLibrary.split(' ')
-                semanticsMachineName = semanticsMachineNameArray[0]
-                if machineName == semanticsMachineName:
-                    message = 'The version of the H5P library %s used in the content is not valid. Content contains %s, but it should be %s.' % (
-                        machineName, value['library'], semanticsLibrary)
+                semantics_machine_name_array = semanticsLibrary.split(' ')
+                semantics_machine_name = semantics_machine_name_array[0]
+                if machine_name == semantics_machine_name:
+                    message = 'The version of the H5P library %s used in the content is not valid. ' \
+                              'Content contains %s, but it should be %s.' \
+                              % (machine_name, value['library'], semanticsLibrary)
 
             if message is None:
                 message = 'The H5P library %s used in the content is not valid.' % value['library']
@@ -353,30 +355,30 @@ class H5PContentValidator:
                 return
 
         if not value['library'] in self.libraries:
-            libSpec = self.h5pC.library_from_string(value['library'])
-            library = self.h5pC.load_library(libSpec['machineName'], libSpec['majorVersion'], libSpec['minorVersion'])
-            library['semantics'] = self.h5pC.load_library_semantics(libSpec['machineName'], libSpec['majorVersion'],
-                                                                    libSpec['minorVersion'])
+            lib_spec = self.h5pC.library_from_string(value['library'])
+            library = self.h5pC.load_library(lib_spec['machine_name'], lib_spec['majorVersion'], lib_spec['minorVersion'])
+            library['semantics'] = self.h5pC.load_library_semantics(lib_spec['machine_name'], lib_spec['majorVersion'],
+                                                                    lib_spec['minorVersion'])
             self.libraries[value['library']] = library
         else:
             library = self.libraries[value['library']]
 
         self.validateGroup(value['params'], {'type': 'group', 'fields': library['semantics'], }, False)
-        validKeys = ['library', 'params', 'subContentId']
+        valid_keys = ['library', 'params', 'subContentId']
         if 'extraAttributes' in semantics:
-            validKeys = validKeys + semantics['extraAttributes']
-        self.filterParams(value, validKeys)
+            valid_keys = valid_keys + semantics['extraAttributes']
+        self.filterParams(value, valid_keys)
 
         if ("subContentId" in value and not re.search(
-            '(?i)^\{?[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}\}?$', value["subContentId"])):
+                '(?i)^\{?[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}\}?$', value["subContentId"])):
             del (value["subContentId"])
 
-        depKey = 'preloaded-' + library['machine_name']
-        if depKey not in self.dependencies:
-            self.dependencies[depKey] = {'library': library, 'type': 'preloaded'}
+        dep_key = 'preloaded-' + library['machine_name']
+        if dep_key not in self.dependencies:
+            self.dependencies[dep_key] = {'library': library, 'type': 'preloaded'}
             self.nextWeight = self.h5pC.find_library_dependencies(self.dependencies, library, self.nextWeight)
-            self.nextWeight = self.nextWeight + 1
-            self.dependencies[depKey]['weight'] = self.nextWeight
+            self.nextWeight += 1
+            self.dependencies[dep_key]['weight'] = self.nextWeight
 
     ##
     # Check params for a whitelist of allowed properties
@@ -390,8 +392,8 @@ class H5PContentValidator:
     # Prevent cross-site-scripting (XSS) vulnerabilities
     ##
     def filterXss(self, string, allowedTags=None, allowedStyles=False):
-        if allowedTags is None:
-            allowedTags = ['a', 'em', 'strong', 'cite', 'blockquote', 'code', 'ul', 'ol', 'li', 'dl', 'dt', 'dd']
+        if allowed_tags is None:
+            allowed_tags = ['a', 'em', 'strong', 'cite', 'blockquote', 'code', 'ul', 'ol', 'li', 'dl', 'dt', 'dd']
 
         if len(string) == 0:
             return string
@@ -415,7 +417,8 @@ class H5PContentValidator:
         # Named entities
         string = re.sub('&amp;([A-Za-z][A-Za-z0-9]*;)', '&\1', string)
 
-        return re.sub('%(<(?=[^a-zA-Z!/])|<!--.*?-->|<[^>]*(>|$)|>)%x', lambda match: self.filterXssSplit(match, allowedTags, allowedStyles), string)
+        return re.sub('%(<(?=[^a-zA-Z!/])|<!--.*?-->|<[^>]*(>|$)|>)%x',
+                      lambda match: self.filterXssSplit(match, allowed_tags, allowedStyles), string)
 
     ##
     # Process an HTML tag
@@ -437,7 +440,7 @@ class H5PContentValidator:
 
         slash = matches.group(0).strip()
         elem = matches.group(1)
-        attrList = matches.group(2)
+        attr_list = matches.group(2)
         comment = matches.group(3)
 
         if comment:
@@ -454,16 +457,16 @@ class H5PContentValidator:
             return '</' + elem + '>'
 
         # Is there a closing XHTML slash at the end of the attributes ?
-        attrList = re.sub('%(\s?)/\s*$%', '\1', attrList, -1)
-        xhtmlSlash = '/' if attrList else ''
+        attr_list = re.sub('%(\s?)/\s*$%', '\1', attr_list, -1)
+        xhtml_slash = '/' if attr_list else ''
 
         # Clean up attributes
         attr2 = ' '.join(
-            self.filterXssAttributes(attrList, allowedStyles if elem in self.allowed_styleable_tags else False))
+            self.filterXssAttributes(attr_list, allowedStyles if elem in self.allowed_styleable_tags else False))
         attr2 = re.sub('[<>]', '', attr2)
         attr2 = ' ' + attr2 if len(attr2) else ''
 
-        return '<' + elem + attr2 + xhtmlSlash + '>'
+        return '<' + elem + attr2 + xhtml_slash + '>'
 
     def getCopyrightSemantics(self):
 
@@ -477,13 +480,17 @@ class H5PContentValidator:
                 "regexp": {"pattern": "^http[s]?://.+", "modifiers": "i"}},
             {"name": "license", "type": "select", "label": "License", "default": "U",
                 "options": [{"value": "U", "label": "Undisclosed"}, {"value": "CC BY", "label": "Attribution 4.0"},
-                    {"value": "CC BY-SA", "label": "Attribution-ShareAlike 4.0"},
-                    {"value": "CC BY-ND", "label": "Attribution-NoDerivs 4.0"},
-                    {"value": "CC BY-NC", "label": "Attribution-NonCommercial 4.0"},
-                    {"value": "CC BY-NC-SA", "label": "Attribution-NonCommercial-ShareAlike 4.0"},
-                    {"value": "CC BY-NC-ND", "label": "Attribution-NonCommercial-NoDerivs 4.0"},
-                    {"value": "GNU GPL", "label": "General Public License v3"},
-                    {"value": "PD", "label": "Public Domain"},
-                    {"value": "ODC PDDL", "label": "Public Domain Dedication and Licence"},
-                    {"value": "CC PDM", "label": "Public Domain Mark"}, {"value": "C", "label": "Copyright"}]}]}
+                            {"value": "CC BY-SA", "label": "Attribution-ShareAlike 4.0"},
+                            {"value": "CC BY-ND", "label": "Attribution-NoDerivs 4.0"},
+                            {"value": "CC BY-NC", "label": "Attribution-NonCommercial 4.0"},
+                            {"value": "CC BY-NC-SA", "label": "Attribution-NonCommercial-ShareAlike 4.0"},
+                            {"value": "CC BY-NC-ND", "label": "Attribution-NonCommercial-NoDerivs 4.0"},
+                            {"value": "GNU GPL", "label": "General Public License v3"},
+                            {"value": "PD", "label": "Public Domain"},
+                            {"value": "ODC PDDL", "label": "Public Domain Dedication and Licence"},
+                            {"value": "CC PDM", "label": "Public Domain Mark"},
+                            {"value": "C", "label": "Copyright"}
+                            ]
+             }
+        ]}
         return semantics

@@ -8,6 +8,8 @@ from h5pp.h5p.h5pclasses import H5PDjango
 from h5pp.h5p.h5pmodule import h5p_insert
 from h5pp.h5p.editor.h5peditormodule import createContent
 
+from h5pp.h5p.library.H5PCore import H5PCore
+
 
 def handleUploadedFile(files, filename):
     """
@@ -53,12 +55,12 @@ class LibrariesForm(forms.Form):
                 raise forms.ValidationError('Too many choices selected.')
             interface = H5PDjango(self.user)
             paths = handleUploadedFile(h5pfile, h5pfile.name)
-            validator = interface.h5pGetInstance('validator', paths['folderPath'], paths['path'])
+            validator = interface.getValidator('validator', paths['folderPath'], paths['path'])
 
             if not validator.is_valid_package(True, False):
                 raise forms.ValidationError('The uploaded file was not a valid h5p package.')
 
-            storage = interface.h5pGetInstance('storage')
+            storage = interface.getStorage()
             if not storage.save_package(None, None, True):
                 raise forms.ValidationError('Error during library save.')
         elif down:
@@ -88,7 +90,9 @@ class CreateForm(forms.Form):
     title = forms.CharField(label='Title ')
     h5p_type = forms.ChoiceField(choices=CHOICES, widget=forms.RadioSelect())
     h5p = forms.FileField(label='HTML 5 Package ',
-                          help_text='Select a .h5p file to upload and create interactive content from. You may start with the <a href="http://h5p.org/content-types-and-applications" target="_blank">example files</a> on H5P.org',
+                          help_text='Select a .h5p file to upload and create interactive content from. '
+                                    'You may start with the <a href="http://h5p.org/content-types-and-applications" '
+                                    'target="_blank">example files</a> on H5P.org',
                           required=False)
     json_content = forms.CharField(widget=forms.HiddenInput())
     disable = forms.IntegerField(widget=forms.HiddenInput())
@@ -108,9 +112,9 @@ class CreateForm(forms.Form):
             if not h5pfile:
                 raise forms.ValidationError('You need to choose a valid h5p package.')
 
-            interface = H5PDjango(self.request.user)
+            interface: H5PDjango = H5PDjango(self.request.user)
             paths = handleUploadedFile(h5pfile, h5pfile.name)
-            validator = interface.h5pGetInstance('validator', paths['folderPath'], paths['path'])
+            validator = interface.getValidator(paths['folderPath'], paths['path'])
 
             if not validator.is_valid_package(False, False):
                 raise forms.ValidationError('The uploaded file was not a valid h5p package.')
@@ -121,21 +125,21 @@ class CreateForm(forms.Form):
                 raise forms.ValidationError('Error during saving the content.')
         else:
             interface = H5PDjango(self.request.user)
-            core = interface.h5pGetInstance('core')
+            core: H5PCore = interface.getCore()
             content = dict()
             content['disable'] = 0
-            libraryData = core.library_from_string(self.request.POST['h5p_library'])
-            if not libraryData:
+            library_data = core.library_from_string(self.request.POST['h5p_library'])
+            if not library_data:
                 raise forms.ValidationError('You must choose an H5P content type or upload an H5P file.')
             else:
-                content['library'] = libraryData
-                runnable = h5p_libraries.objects.filter(machine_name=libraryData['machineName'],
-                                                        major_version=libraryData['majorVersion'],
-                                                        minor_version=libraryData['minorVersion']).values('runnable')
+                content['library'] = library_data
+                runnable = h5p_libraries.objects.filter(machine_name=library_data['machineName'],
+                                                        major_version=library_data['majorVersion'],
+                                                        minor_version=library_data['minorVersion']).values('runnable')
                 if not len(runnable) > 0 and runnable[0]['runnable'] == 0:
                     raise forms.ValidationError('Invalid H5P content type')
 
-                content['library']['libraryId'] = core.h5pF.get_library_id(content['library']['machineName'],
+                content['library']['libraryId'] = core.h5p_framework.getLibraryId(content['library']['machineName'],
                                                                            content['library']['majorVersion'],
                                                                            content['library']['minorVersion'])
                 if not content['library']['libraryId']:
@@ -158,13 +162,13 @@ class CreateForm(forms.Form):
 
     def getJsonContent(self):
         if 'json_content' in self.request.GET or 'translation_source' in self.request.GET and 'json_content' in \
-            self.request.GET['translation_source']:
-            filteredParams = self.request.GET['json_content'] if 'translation_source' not in self.request.GET else \
-            self.request.GET['translation_source']['json_content']
+                self.request.GET['translation_source']:
+            filtered_params = self.request.GET['json_content'] if 'translation_source' not in self.request.GET else \
+                self.request.GET['translation_source']['json_content']
         else:
-            filteredParams = '{}'
+            filtered_params = '{}'
 
-        return filteredParams
+        return filtered_params
 
     def getLibrary(self):
         if 'h5p_library' in self.request.GET:

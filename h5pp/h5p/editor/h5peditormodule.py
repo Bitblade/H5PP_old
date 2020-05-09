@@ -30,7 +30,7 @@ SCRIPTS = ["scripts/h5peditor.js", "scripts/h5peditor-semantic-structure.js", "s
 
 def h5peditorContent(request, contentId=None):
     assets = h5p_add_core_assets()
-    coreAssets = h5p_add_core_assets()
+    core_assets = h5p_add_core_assets()
     editor = h5p_add_files_and_settings(request, True)
     framework = H5PDjango(request.user)
     add = list()
@@ -56,7 +56,7 @@ def h5peditorContent(request, contentId=None):
 
     add.append(languageFile)
 
-    contentValidator = framework.h5pGetInstance('contentvalidator')
+    contentValidator = framework.getContentValidator()
     editor['editor'] = {
         'filesPath': str(PurePath(settings.H5P_STORAGE_ROOT / 'editor')),
         'fileIcon': {
@@ -70,7 +70,7 @@ def h5peditorContent(request, contentId=None):
         'assets': assets,
         'contentRelUrl': '../media/h5pp/content/'}
 
-    return {'editor': json.dumps(editor), 'coreAssets': coreAssets, 'assets': assets, 'add': add}
+    return {'editor': json.dumps(editor), 'core_assets': core_assets, 'assets': assets, 'add': add}
 
 
 ##
@@ -80,12 +80,12 @@ def h5peditorContent(request, contentId=None):
 
 def handleContentUserData(request):
     framework = H5PDjango(request.user)
-    core = framework.h5pGetInstance('core')
-    contentId = request.GET['contentId']
-    subContentId = request.GET['subContentId']
-    dataId = request.GET['dataType']
+    core = framework.getCore()
+    content_id = request.GET['contentId']
+    sub_content_id = request.GET['subContentId']
+    data_id = request.GET['dataType']
 
-    if contentId is None or dataId is None or subContentId is None:
+    if content_id is None or data_id is None or sub_content_id is None:
         return ajaxError('Missing parameters')
 
     if 'data' in request.POST and 'preload' in request.POST and 'invalidate' in request.POST:
@@ -97,21 +97,21 @@ def handleContentUserData(request):
         if data is not None and preload is not None and invalidate is not None:
             if data == '0':
                 # Delete user data
-                deleteUserData(contentId, subContentId, dataId, request.user.id)
+                deleteUserData(content_id, sub_content_id, data_id, request.user.id)
             else:
                 # Save user data
-                saveUserData(contentId, subContentId, dataId, preload, invalidate, data, request.user.id)
+                saveUserData(content_id, sub_content_id, data_id, preload, invalidate, data, request.user.id)
 
             return ajaxSuccess()
     else:
         # Fetch user data
-        userData = getUserData(contentId, subContentId, dataId, request.user.id)
-        if not userData:
+        user_data = getUserData(content_id, sub_content_id, data_id, request.user.id)
+        if not user_data:
             # Did not find data, return nothing
             return ajaxSuccess()
         else:
             # Found data, return encoded data
-            return ajaxSuccess(userData.data)
+            return ajaxSuccess(user_data.data)
 
     return
 
@@ -173,14 +173,14 @@ def deleteUserData(contentId, subContentId, dataId, userId):
 
 def createContent(request, content, params):
     framework = H5PDjango(request.user)
-    editor = framework.h5pGetInstance('editor')
-    contentId = content['id']
+    editor = framework.getEditor()
+    content_id = content['id']
 
-    if not editor.createDirectories(contentId):
+    if not editor.createDirectories(content_id):
         print(('Unable to create content directory.', 'error'))
         return False
 
-    editor.processParameters(contentId, content['library'], params)
+    editor.processParameters(content_id, content['library'], params)
 
     return True
 
@@ -188,17 +188,17 @@ def createContent(request, content, params):
 def getLibraryProperty(library, prop='all'):
     matches = re.search('(.+)\s(\d+)\.(\d+)$', library)
     if matches:
-        libraryData = {'machineName': matches.group(1), 'majorVersion': matches.group(2),
+        library_data = {'machineName': matches.group(1), 'majorVersion': matches.group(2),
             'minorVersion': matches.group(3)}
         if prop == 'all':
-            return libraryData
+            return library_data
         elif prop == 'libraryId':
-            temp = h5p_libraries.objects.filter(machine_name=libraryData['machineName'],
-                                                major_version=libraryData['majorVersion'],
-                                                minor_version=libraryData['minorVersion']).values('library_id')
+            temp = h5p_libraries.objects.filter(machine_name=library_data['machineName'],
+                                                major_version=library_data['majorVersion'],
+                                                minor_version=library_data['minorVersion']).values('library_id')
             return temp
         else:
-            return libraryData[prop]
+            return library_data[prop]
     else:
         return False
 

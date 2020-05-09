@@ -11,7 +11,7 @@ import re
 from django.conf import settings
 from django.contrib.sites.models import Site
 
-from h5p.h5pevent import H5PEvent
+from h5pp.h5p.h5pevent import H5PEvent
 from h5pp.models import *
 from h5pp.h5p.h5pclasses import H5PDjango
 
@@ -65,7 +65,7 @@ def h5p_library_details_title(library_id):
 
 def h5p_insert(request, interface=None):
     if 'h5p_upload' in request.POST:
-        storage = interface.h5pGetInstance('storage')
+        storage = interface.getStorage()
         storage.save_package(h5p_get_content_id(request), None, False,
                              {'disable': request.POST['disable'], 'title': request.POST['title']})
     else:
@@ -87,7 +87,7 @@ def h5p_insert(request, interface=None):
                 'minorVersion': request.POST['main_library']['minorVersion'] if 'minorVersion' in request.POST[
                     'main_library'] else ''
             }
-        core = interface.h5pGetInstance('core')
+        core = interface.getCore()
         core.save_content(
             {'id': h5p_get_content_id(request), 'title': request.POST['title'], 'params': request.POST['json_content'],
                 'embed_type': request.POST['embed_type'], 'disable': request.POST['disable'], 'library': lib,
@@ -125,7 +125,7 @@ def h5p_delete(request):
 ##
 def h5p_delete_h5p_content(request, content):
     framework = H5PDjango(request.user)
-    storage = framework.h5pGetInstance('storage')
+    storage = framework.getStorage()
     storage.delete_package(content)
 
     # Remove content points
@@ -137,7 +137,7 @@ def h5p_delete_h5p_content(request, content):
 
 def h5p_load(request):
     interface = H5PDjango(request.user)
-    core = interface.h5pGetInstance('core')
+    core = interface.getCore()
     content = core.load_content(h5p_get_content_id(request))
 
     if content is not None:
@@ -321,7 +321,7 @@ def h5p_add_files_and_settings(request, embed_type):
     integration = h5p_get_core_settings(request.user)
     assets = h5p_add_core_assets()
 
-    if 'json_content' not in request.GET or not 'contentId' in request.GET:
+    if 'json_content' not in request.GET or 'contentId' not in request.GET:
         return integration
 
     content = h5p_get_content(request)
@@ -331,7 +331,7 @@ def h5p_add_files_and_settings(request, embed_type):
     integration['contents'] = dict()
     integration['contents'][str("cid-%s" % content['id'])] = h5p_get_content_settings(request.user, content)
 
-    core = interface.h5pGetInstance('core')
+    core = interface.getCore()
     preloaded_dependencies = core.load_content_dependencies(content['id'], 'preloaded')
     files = core.get_dependencies_files(preloaded_dependencies)
     library_list = h5p_dependencies_to_library_list(preloaded_dependencies)
@@ -378,7 +378,7 @@ def h5p_get_content(request):
 
 def h5p_get_content_settings(user, content):
     interface = H5PDjango(user)
-    core = interface.h5pGetInstance('core')
+    core = interface.getCore()
     filtered = core.filter_parameters(content)
 
     # Get preloaded user data
@@ -467,7 +467,7 @@ def h5p_dependencies_to_library_list(dependencies):
 ##
 def h5p_add_iframe_assets(request, integration, content_id, files):
     framework = H5PDjango(request.user)
-    core = framework.h5pGetInstance('core')
+    core = framework.getCore()
 
     assets = h5p_add_core_assets()
     integration['core'] = dict()
@@ -539,7 +539,7 @@ def h5p_embed(request):
     integration['contents'] = dict()
     integration['contents']["cid-%s" % content['id']] = h5p_get_content_settings(request.user, content)
 
-    core = framework.h5pGetInstance('core')
+    core = framework.getCore()
     preloaded_dependencies = core.load_content_dependencies(content['id'])
     files = core.get_dependencies_files(preloaded_dependencies)
     library_list = h5p_dependencies_to_library_list(preloaded_dependencies)
@@ -576,18 +576,18 @@ def export_score(content_id=None):
     if content_id:
         scores = h5p_points.objects.filter(content_id=content_id)
         content = h5p_contents.objects.get(content_id=content_id)
-        response = response + '[Content] : %s - [Users] : %s\n' % (content.title, len(scores))
+        response += '[Content] : %s - [Users] : %s\n' % (content.title, len(scores))
         for score in scores:
             score.uid = User.objects.get(id=score.uid).username
             score.has_finished = 'Completed' if score.finished >= score.started else 'Not completed'
             score.points = '..' if score.points is None else score.points
             score.max_points = '..' if score.max_points is None else score.max_points
-            response = response + '[Username] : %s | [Current] : %s | [Max] : %s | [Progression] : %s\n' % (
+            response += '[Username] : %s | [Current] : %s | [Max] : %s | [Progression] : %s\n' % (
                 score.uid, score.points, score.max_points, score.has_finished)
         return response
 
     scores = h5p_points.objects.all()
-    response = response + '[Users] : %s\n' % len(scores)
+    response += '[Users] : %s\n' % len(scores)
     current_content = ''
     for score in scores:
         content = h5p_contents.objects.get(content_id=score.content_id)
@@ -597,7 +597,7 @@ def export_score(content_id=None):
         score.has_finished = 'Completed' if score.finished >= score.started else 'Not completed'
         score.points = '..' if score.points is None else score.points
         score.max_points = '..' if score.max_points is None else score.max_points
-        response = response + '[Username] : %s | [Current] : %s | [Max] : %s | [Progression] : %s\n' % (
+        response += '[Username] : %s | [Current] : %s | [Max] : %s | [Progression] : %s\n' % (
             score.uid, score.points, score.max_points, score.has_finished)
         current_content = content.content_id
     return response

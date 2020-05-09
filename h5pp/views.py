@@ -17,7 +17,7 @@ from h5pp.h5p.editor.library.h5peditorfile import H5PEditorFile
 
 
 def librariesView(request):
-    if True or (request.user.is_authenticated() and request.user.is_superuser):
+    if request.user.is_authenticated and request.user.is_superuser:
         libraries = h5p_libraries.objects.all()
         if request.method == 'POST':
             form = LibrariesForm(request.user, request.POST, request.FILES)
@@ -73,9 +73,9 @@ class CreateContentView(CreateView):
 
     def form_valid(self, form):
         # this is hacky and needs to be corrected in the form.
-        newId = h5p_contents.objects.all().order_by('-content_id')[0]
+        new_id = h5p_contents.objects.all().order_by('-content_id')[0]
 
-        return HttpResponseRedirect(self.get_success_url(str(newId.content_id)))
+        return HttpResponseRedirect(self.get_success_url(str(new_id.content_id)))
 
 
 class UpdateContentView(FormView):
@@ -137,8 +137,8 @@ def createView(request, contentId=None):
                 if contentId is not None:
                     return HttpResponseRedirect(reverse("h5pp:h5pcontent", args=[contentId]))
                 else:
-                    newId = h5p_contents.objects.all().order_by('-content_id')[0]
-                    return HttpResponseRedirect(reverse("h5pp:h5pcontent", args=[newId.content_id]))
+                    new_id = h5p_contents.objects.all().order_by('-content_id')[0]
+                    return HttpResponseRedirect(reverse("h5pp:h5pcontent", args=[new_id.content_id]))
             return render(request, 'h5p/create.html', {'form': form, 'data': editor})
 
         elif contentId is not None:
@@ -218,9 +218,9 @@ def listView(request):
         return render(request, 'h5p/listContents.html',
                       {'status': 'You do not have the necessary rights to delete a video.'})
 
-    listContent = h5p_get_list_content(request)
-    if listContent and len(listContent) > 0:
-        return render(request, 'h5p/listContents.html', {'listContent': listContent})
+    list_content = h5p_get_list_content(request)
+    if list_content and len(list_content) > 0:
+        return render(request, 'h5p/listContents.html', {'listContent': list_content})
 
     return render(request, 'h5p/listContents.html', {'status': 'No contents installed.'})
 
@@ -232,23 +232,23 @@ def scoreView(request, contentId):
         raise Http404
     if request.user.is_authenticated:
         if request.method == 'POST' and (request.user.username == content.author or request.user.is_superuser):
-            userData = h5p_content_user_data.objects.filter(content_main_id=content.content_id)
-            if userData:
-                userData.delete()
-            userPoints = h5p_points.objects.filter(content_id=content.content_id)
-            if userPoints:
-                userPoints.delete()
+            user_data = h5p_content_user_data.objects.filter(content_main_id=content.content_id)
+            if user_data:
+                user_data.delete()
+            user_points = h5p_points.objects.filter(content_id=content.content_id)
+            if user_points:
+                user_points.delete()
 
             return HttpResponseRedirect('/h5p/score/%s' % content.content_id, {'status': "Scores has been reset !"})
 
         if 'user' in request.GET and (request.user.username == content.author or request.user.is_superuser):
             user = User.objects.get(username=request.GET['user'])
-            userData = h5p_content_user_data.objects.filter(user_id=user.id, content_main_id=content.content_id)
-            if userData:
-                userData.delete()
-            userPoints = h5p_points.objects.filter(uid=user.id, content_id=content.content_id)
-            if userPoints:
-                userPoints.delete()
+            user_data = h5p_content_user_data.objects.filter(user_id=user.id, content_main_id=content.content_id)
+            if user_data:
+                user_data.delete()
+            user_points = h5p_points.objects.filter(uid=user.id, content_id=content.content_id)
+            if user_points:
+                user_points.delete()
 
             return HttpResponseRedirect('/h5p/score/%s' % content.content_id,
                                         {'status': "%s's score has been reset !" % user.username})
@@ -270,13 +270,13 @@ def scoreView(request, contentId):
 
             return response
 
-        listScore = dict()
+        list_score = dict()
         if request.user.username == content.author or request.user.is_superuser:
-            listScore['owner'] = True
+            list_score['owner'] = True
 
-        listScore['data'] = get_user_score(content.content_id)
-        if listScore['data'] and listScore['data'].count() > 0:
-            return render(request, 'h5p/score.html', {'listScore': listScore, 'content': content})
+        list_score['data'] = get_user_score(content.content_id)
+        if list_score['data'] and list_score['data'].count() > 0:
+            return render(request, 'h5p/score.html', {'listScore': list_score, 'content': content})
 
         return render(request, 'h5p/score.html', {'status': 'No score available yet.', 'content': content})
 
@@ -302,7 +302,7 @@ def editorAjax(request, contentId):
     if request.method == 'POST':
         if 'libraries' in request.GET:
             framework = H5PDjango(request.user)
-            editor = framework.h5pGetInstance('editor')
+            editor = framework.getEditor()
             data = editor.getLibraries(request)
             return HttpResponse(data, content_type='application/json')
         elif 'file' in request.FILES:
@@ -312,8 +312,8 @@ def editorAjax(request, contentId):
                 return HttpResponse('File Not Found', content_type='application/json')
 
             if f.validate():
-                core = framework.h5pGetInstance('core')
-                fileId = core.fs.save_file(f, request.POST['contentId'])
+                core = framework.getCore()
+                file_id = core.fs.save_file(f, request.POST['contentId'])
 
             data = f.printResult()
             return HttpResponse(data, content_type='application/json')
@@ -324,7 +324,7 @@ def editorAjax(request, contentId):
         minor = request.GET['minorVersion'] if 'minorVersion' in request.GET else 0
 
         framework = H5PDjango(request.user)
-        editor = framework.h5pGetInstance('editor')
+        editor = framework.getEditor()
         if name != '':
             data = editor.getLibraryData(name, major, minor, settings.H5P_LANGUAGE)
             return HttpResponse(data, content_type='application/json')

@@ -1,2 +1,1 @@
-import os
-__path__ = [os.path.abspath('h5pp/h5pp/')]
+default_app_config = 'h5pp.apps.H5PPConfig'

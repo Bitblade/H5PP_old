@@ -2,7 +2,7 @@ from django.conf.urls import url
 from django.urls import path, include
 from django.views.generic import TemplateView
 
-from h5pp.views import (librariesView, CreateContentView, ContentDetailView, contentsView,
+from .views import (librariesView, CreateContentView, ContentDetailView, contentsView,
                         createView, editorAjax, listView, ajax, scoreView, embedView)
 
 app_name = 'h5pp'
