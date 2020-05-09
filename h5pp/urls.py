@@ -3,7 +3,7 @@ from django.urls import path, include
 from django.views.generic import TemplateView
 
 from .views import (librariesView, CreateContentView, ContentDetailView, contentsView,
-                        createView, editorAjax, listView, ajax, scoreView, embedView)
+                    createView, editorAjax, listView, ajax, scoreView, embedView)
 
 app_name = 'h5pp'
 urlpatterns = [  # Base
@@ -26,6 +26,6 @@ urlpatterns = [  # Base
     url(r'^embed/$', embedView, name='h5pembed'),
 
     # Ajax
-    url(r'^ajax/$', ajax, name="h5pajax"), url(r'^editorajax/(?P<contentId>\d+)/$', editorAjax, name="h5peditorAjax"),
+    url(r'^ajax/$', ajax, name="h5pajax"), url(r'^editorajax/(?P<content_id>\d+)/$', editorAjax, name="h5peditorAjax"),
 
     path('accounts/', include('django.contrib.auth.urls'))]

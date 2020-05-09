@@ -55,12 +55,12 @@ class LibrariesForm(forms.Form):
                 raise forms.ValidationError('Too many choices selected.')
             interface = H5PDjango(self.user)
             paths = handleUploadedFile(h5pfile, h5pfile.name)
-            validator = interface.getValidator('validator', paths['folderPath'], paths['path'])
+            validator = interface.getValidatorInstance(paths['folderPath'], paths['path'])
 
             if not validator.is_valid_package(True, False):
                 raise forms.ValidationError('The uploaded file was not a valid h5p package.')
 
-            storage = interface.getStorage()
+            storage = interface.getStorageInstance()
             if not storage.save_package(None, None, True):
                 raise forms.ValidationError('Error during library save.')
         elif down:
@@ -114,7 +114,7 @@ class CreateForm(forms.Form):
 
             interface: H5PDjango = H5PDjango(self.request.user)
             paths = handleUploadedFile(h5pfile, h5pfile.name)
-            validator = interface.getValidator(paths['folderPath'], paths['path'])
+            validator = interface.getValidatorInstance(paths['folderPath'], paths['path'])
 
             if not validator.is_valid_package(False, False):
                 raise forms.ValidationError('The uploaded file was not a valid h5p package.')
@@ -139,9 +139,11 @@ class CreateForm(forms.Form):
                 if not len(runnable) > 0 and runnable[0]['runnable'] == 0:
                     raise forms.ValidationError('Invalid H5P content type')
 
-                content['library']['libraryId'] = core.h5p_framework.getLibraryId(content['library']['machineName'],
-                                                                           content['library']['majorVersion'],
-                                                                           content['library']['minorVersion'])
+                content['library']['libraryId'] = core.h5p_framework.getLibraryId(
+                    content['library']['machineName'],
+                    content['library']['majorVersion'],
+                    content['library']['minorVersion']
+                )
                 if not content['library']['libraryId']:
                     raise forms.ValidationError('No such library')
 

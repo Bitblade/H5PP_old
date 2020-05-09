@@ -16,50 +16,56 @@ from h5pp.h5p.library import H5PCore
 
 class H5PValidator:
     h5pRequired = {
-        "title": "^.{1,255}$", "language": "^[a-z]{1,5}$",
+        "title": r"^.{1,255}$",
+        "language": r"^[a-z]{1,5}$",
         "preloadedDependencies": {
-            "machineName": "^[\w0-9\-\.]{1,255}$",
-            "majorVersion": "^[0-9]{1,5}$",
-            "minorVersion": "^[0-9]{1,5}$"
+            "machineName": r"^[\w0-9\-\.]{1,255}$",
+            "majorVersion": r"^[0-9]{1,5}$",
+            "minorVersion": r"^[0-9]{1,5}$"
         },
-        "mainLibrary": "(?i)^[$a-z_][0-9a-z_\.$]{1,254}$",
+        "mainLibrary": r"(?i)^[$a-z_][0-9a-z_\.$]{1,254}$",
         "embedTypes": {"iframe", "div"}}
 
     h5pOptional = {
-        "contentType": "^.{1,255}$", "author": "^.{1,255}$",
-        "license": "^(cc-by|cc-by-sa|cc-by-nd|cc-by-nc|cc-by-nc-sa|cc-by-nc-nd|pd|cr|MIT|GPL1|GPL2|GPL3|MPL|MPL2)$",
+        "contentType": r"^.{1,255}$",
+        "author": r"^.{1,255}$",
+        "license": r"^(cc-by|cc-by-sa|cc-by-nd|cc-by-nc|cc-by-nc-sa|cc-by-nc-nd|pd|cr|MIT|GPL1|GPL2|GPL3|MPL|MPL2)$",
         "dynamicDependencies": {
-            "machineName": "^[\w0-9\-\.]{1,255}$",
-            "majorVersion": "^[0-9]{1,5}$",
-            "minorVersion": "^[0-9]{1,5}$"
+            "machineName": r"^[\w0-9\-\.]{1,255}$",
+            "majorVersion": r"^[0-9]{1,5}$",
+            "minorVersion": r"^[0-9]{1,5}$"
         },
-        "w": "^[0-9]{1,4}$",
-        "n": "^[0-9]{1,4}$",
-        "metaKeywords": "^.{1,}$",
-        "metaDescription": "^.{1,}$"
+        "w": r"^[0-9]{1,4}$",
+        "n": r"^[0-9]{1,4}$",
+        "metaKeywords": r"^.{1,}$",
+        "metaDescription": r"^.{1,}$"
     }
 
     libraryRequired = {
-        "title": "^.{1,255}$", "majorVersion": "^[0-9]{1,5}$", "minorVersion": "^[0-9]{1,5}$",
-        "patchVersion": "^[0-9]{1,5}$", "machineName": "^[\w0-9\-\.]{1,255}$", "runnable": "^(0|1)$"
+        "title": r"^.{1,255}$",
+        "majorVersion": r"^[0-9]{1,5}$",
+        "minorVersion": r"^[0-9]{1,5}$",
+        "patchVersion": r"^[0-9]{1,5}$",
+        "machineName": r"^[\w0-9\-\.]{1,255}$",
+        "runnable": r"^(0|1)$"
     }
 
     libraryOptional = {
-        "author": "^.{1,255}$",
-        "license": "^(cc-by|cc-by-sa|cc-by-nd|cc-by-nc|cc-by-nc-sa|cc-by-nc-nd|pd|cr|MIT|GPL1|GPL2|GPL3|MPL|MPL2)$",
-        "description": "^.{1,}$",
+        "author": r"^.{1,255}$",
+        "license": r"^(cc-by|cc-by-sa|cc-by-nd|cc-by-nc|cc-by-nc-sa|cc-by-nc-nd|pd|cr|MIT|GPL1|GPL2|GPL3|MPL|MPL2)$",
+        "description": r"^.{1,}$",
         "dynamicDependencies":
-            {"machineName": "^[\w0-9\-\.]{1,255}$", "majorVersion": "^[0-9]{1,5}$", "minorVersion": "^[0-9]{1,5}$"},
+            {"machineName": r"^[\w0-9\-\.]{1,255}$", "majorVersion": r"^[0-9]{1,5}$", "minorVersion": r"^[0-9]{1,5}$"},
         "preloadedDependencies":
-            {"machineName": "^[\w0-9\-\.]{1,255}$", "majorVersion": "^[0-9]{1,5}$", "minorVersion": "^[0-9]{1,5}$"},
+            {"machineName": r"^[\w0-9\-\.]{1,255}$", "majorVersion": r"^[0-9]{1,5}$", "minorVersion": r"^[0-9]{1,5}$"},
         "editorDependencies":
-            {"machineName": "^[\w0-9\-\.]{1,255}$", "majorVersion": "^[0-9]{1,5}$", "minorVersion": "^[0-9]{1,5}$"},
-        "preloadedJs": {"path": "(?i)^((\/)?[a-z_\-\s0-9\.]+)+\.js$"},
-        "preloadedCss": {"path": "(?i)^((\/)?[a-z_\-\s0-9\.]+)+\.css$"},
-        "dropLibraryCss": {"machineName": "^[\w0-9\-\.]{1,255}$"},
-        "w": "^[0-9]{1,4}$", "h": "^[0-9]{1,4}$",
-        "embedTypes": {"iframe", "div"}, "fullscreen": "^(0|1)$",
-        "coreApi": {"majorVersion": "^[0-9]{1,5}$", "minorVersion": "^[0-9]{1,5}$"}
+            {"machineName": r"^[\w0-9\-\.]{1,255}$", "majorVersion": r"^[0-9]{1,5}$", "minorVersion": r"^[0-9]{1,5}$"},
+        "preloadedJs": {"path": r"(?i)^((\/)?[a-z_\-\s0-9\.]+)+\.js$"},
+        "preloadedCss": {"path": r"(?i)^((\/)?[a-z_\-\s0-9\.]+)+\.css$"},
+        "dropLibraryCss": {"machineName": r"^[\w0-9\-\.]{1,255}$"},
+        "w": r"^[0-9]{1,4}$", "h": r"^[0-9]{1,4}$",
+        "embedTypes": {"iframe", "div"}, "fullscreen": r"^(0|1)$",
+        "coreApi": {"majorVersion": r"^[0-9]{1,5}$", "minorVersion": r"^[0-9]{1,5}$"}
     }
 
     ##
@@ -90,7 +96,6 @@ class H5PValidator:
         os.remove(source)
         return True
 
-
     def process_h5p_content(self, tmp_dir, skip_content, upgrade_only):
         # Process content and libraries
         valid = True
@@ -115,7 +120,6 @@ class H5PValidator:
                 else:
                     main_h5p_data = result
                     main_h5p_exists = True
-
 
             # Check for h5p.jpg ?
             elif f.lower() == "h5p.jpg":
@@ -258,7 +262,6 @@ class H5PValidator:
         library_h5_p_data["uploadDirectory"] = file_path
         return library_h5_p_data
 
-
     ##
     # Validates a .h5p file
     ##
@@ -273,7 +276,7 @@ class H5PValidator:
     # Validates a H5P library
     ##
     def get_library_data(self, f, file_path: Path, tmp_dir: Path) -> Any:
-        if not re.search("^[\w0-9\-.]{1,255}$", f):
+        if not re.search(r"^[\w0-9\-.]{1,255}$", f):
             print("Invalid library name: %s" % f)
             return False
 
@@ -286,7 +289,7 @@ class H5PValidator:
         # validate json if a semantics file is provided
         semantics_path = file_path / 'semantics.json'
 
-        if os.path.exists(semantics_path):
+        if semantics_path.exists():
             semantics = self.get_json_data(semantics_path, True)
             if not semantics:
                 print("Invalid semantics.json file has been included in the library %s" % f)
@@ -301,7 +304,7 @@ class H5PValidator:
             for language_file in language_path.iterdir():
                 if str(language_file.name) in [".", ".."]:
                     continue
-                if not re.search("^(?:-?[a-z]+){1,7}\.json$", str(language_file.name)):
+                if not re.search(r"^(?:-?[a-z]+){1,7}\.json$", str(language_file.name)):
                     print("Invalid language file %s in library %s" % (language_file, f))
                     return False
 

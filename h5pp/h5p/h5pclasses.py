@@ -189,8 +189,9 @@ class H5PDjango:
         if major_version is None or minor_version is None:
             library_id = h5p_libraries.objects.filter(machine_name=machine_name).values('library_id')
         else:
-            library_id = h5p_libraries.objects.filter(machine_name=machine_name, major_version=major_version,
-                minor_version=minor_version).values('library_id')
+            library_id = h5p_libraries.objects.filter(
+                machine_name=machine_name, major_version=major_version, minor_version=minor_version
+            ).values('library_id')
 
         return library_id[0]['library_id'] if len(library_id) > 0 and 'library_id' in library_id[0] else None
 
@@ -299,7 +300,7 @@ class H5PDjango:
         drop_library_css = ''
 
         if 'dropLibraryCss' in library_data:
-            libs = ""  # MLD: Added to make method functional TODO Figure out what libs is meant to be
+            libs = []  # MLD: Added to make method functional TODO Figure out what libs is meant to be
             for lib in library_data['dropLibraryCss']:
                 libs.append(lib['machineName'])
             drop_library_css = libs.split(', ')
@@ -579,12 +580,12 @@ class H5PDjango:
 
         return None if len(semantics) == 0 else semantics[0]
 
-    ##
-    # Make it possible to alter the semantics, adding custom fields, etc.
-    ##
-    def alterLibrarySemantics(self, semantics, name, major_version, minor_version):
-        # TODO
-        return ''
+    # ##
+    # # Make it possible to alter the semantics, adding custom fields, etc.
+    # ##
+    # def alterLibrarySemantics(self, semantics, name, major_version, minor_version):
+    #     # TODO
+    #     return ''
 
     ##
     # Load content
@@ -704,7 +705,7 @@ class H5PDjango:
     # This will update selected fields on the given content
     ##
     def updateContentFields(self, pid, fields):
-        cursor = connection.cursor()
+        # cursor = connection.cursor()
         for name, value in list(fields.items()):
             query = {'{0}'.format(name): value}
             h5p_contents.objects.filter(content_id=pid).update(**query)

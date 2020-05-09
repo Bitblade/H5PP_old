@@ -1,6 +1,5 @@
 from pathlib import Path
 
-from django.contrib.auth.models import User
 from django.test import TestCase
 from django.conf import settings
 from h5pp.h5p.h5pclasses import H5PDjango
@@ -113,6 +112,7 @@ class CoreTestCase(TestCase):
         self.assertEqual(1, result['library_id'])
         print('test_load_library ---- Check')
 
+
 class StorageTestCase(TestCase):
 
     def setUp(self):
@@ -147,7 +147,7 @@ class StorageTestCase(TestCase):
         print('setUp of StorageTestCase ---- Ready')
 
     def test_save_library(self):
-        #TODO H5PDefaultStorage appends /h5pp/ itself? What is going on here?
+        # TODO H5PDefaultStorage appends /h5pp/ itself? What is going on here?
         storage = H5PDefaultStorage(settings.MEDIA_ROOT)
         lib = list(h5p_libraries.objects.filter(library_id=1).values())[0]
         # TODO Make test generic!

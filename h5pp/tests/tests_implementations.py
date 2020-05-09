@@ -1,11 +1,5 @@
-from django.contrib.auth.models import User
 from django.test import TestCase
 
-from h5pp.h5p.library.H5PContentValidator import H5PContentValidator
-from h5pp.h5p.library.H5PCore import H5PCore
-from h5pp.h5p.library.H5PExport import H5PExport
-from h5pp.h5p.library.H5PStorage import H5PStorage
-from h5pp.h5p.library.H5PValidator import H5PValidator
 from h5pp.h5p.h5pmodule import *
 from h5pp.h5p.h5pclasses import H5PDjango
 from h5pp.h5p.library import *
@@ -269,9 +263,9 @@ class H5PClassesTestCase(TestCase):
             tutorial_url=''
         )
         librarylibrary = h5p_libraries_libraries.objects.create(
-        	library_id=1,
-        	required_library_id=2,
-        	dependency_type='preloaded'
+            library_id=1,
+            required_library_id=2,
+            dependency_type='preloaded'
         )
 
         self.assertFalse(interface.loadLibrary('H5P.Test3', 1, 1))

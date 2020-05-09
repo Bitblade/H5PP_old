@@ -73,7 +73,7 @@ class H5PDefaultStorage:
     # TODO Remove devmode
     # MLD: Method contains devmode references, but I'm leaving them in as they do no harm and could
     # help in the future
-    def export_library(self, library, target: Path, development_path: Path=None):
+    def export_library(self, library, target: Path, development_path: Path = None):
         folder = self.library_to_string(library, True)
 
         if development_path is None:
@@ -147,10 +147,10 @@ class H5PDefaultStorage:
     def library_to_string(library, format_as_folder_name=False):
         separator = '-' if format_as_folder_name else ' '
 
-        if 'machine_name' in library:
-            return library['machine_name'] + separator + str(library['major_version']) + '.' + str(library['minor_version'])
-        else:
-            return library['machineName'] + separator + str(library['majorVersion']) + '.' + str(library['minorVersion'])
+        if 'machine_name' not in library:
+            return f'{library["machineName"]}{separator}{str(library["majorVersion"])}.{str(library["minorVersion"])}'
+
+        return f'{library["machine_name"]}{separator}{str(library["major_version"])}.{str(library["minor_version"])}'
 
     ##
     # Save files uploaded through the editor.

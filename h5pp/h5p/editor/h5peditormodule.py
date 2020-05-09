@@ -17,7 +17,8 @@ STYLES = ["libs/darkroom.css", "styles/css/application.css"]
 
 OVERRIDE_STYLES = urllib.parse.urljoin(settings.STATIC_URL, 'h5p/styles/h5pp.css')
 
-SCRIPTS = ["scripts/h5peditor.js", "scripts/h5peditor-semantic-structure.js", "scripts/h5peditor-editor.js",
+SCRIPTS = [
+    "scripts/h5peditor.js", "scripts/h5peditor-semantic-structure.js", "scripts/h5peditor-editor.js",
     "scripts/h5peditor-library-selector.js", "scripts/h5peditor-form.js", "scripts/h5peditor-text.js",
     "scripts/h5peditor-html.js", "scripts/h5peditor-number.js", "scripts/h5peditor-textarea.js",
     "scripts/h5peditor-file-uploader.js", "scripts/h5peditor-file.js", "scripts/h5peditor-image.js",
@@ -25,10 +26,11 @@ SCRIPTS = ["scripts/h5peditor.js", "scripts/h5peditor-semantic-structure.js", "s
     "scripts/h5peditor-boolean.js", "scripts/h5peditor-list.js", "scripts/h5peditor-list-editor.js",
     "scripts/h5peditor-library.js", "scripts/h5peditor-library-list-cache.js", "scripts/h5peditor-select.js",
     "scripts/h5peditor-dimensions.js", "scripts/h5peditor-coordinates.js", "scripts/h5peditor-none.js",
-    "ckeditor/ckeditor.js"]
+    "ckeditor/ckeditor.js"
+]
 
 
-def h5peditorContent(request, contentId=None):
+def h5peditorContent(request):
     assets = h5p_add_core_assets()
     core_assets = h5p_add_core_assets()
     editor = h5p_add_files_and_settings(request, True)
@@ -50,13 +52,13 @@ def h5peditorContent(request, contentId=None):
     add.append(settings.STATIC_URL + 'h5p/h5peditor/scripts/h5peditor-editor.js')
     add.append(settings.STATIC_URL + 'h5p/h5peditor/application.js')
 
-    languageFile = settings.STATIC_URL + 'h5p/h5peditor/language/' + settings.H5P_LANGUAGE + '.js'
-    if not os.path.exists(settings.BASE_DIR + languageFile):
-        languageFile = settings.STATIC_URL + 'h5p/h5peditor/language/en.js'
+    language_file = settings.STATIC_URL + 'h5p/h5peditor/language/' + settings.H5P_LANGUAGE + '.js'
+    if not os.path.exists(settings.BASE_DIR + language_file):
+        language_file = settings.STATIC_URL + 'h5p/h5peditor/language/en.js'
 
-    add.append(languageFile)
+    add.append(language_file)
 
-    contentValidator = framework.getContentValidator()
+    content_validator = framework.getContentValidator()
     editor['editor'] = {
         'filesPath': str(PurePath(settings.H5P_STORAGE_ROOT / 'editor')),
         'fileIcon': {
@@ -64,9 +66,12 @@ def h5peditorContent(request, contentId=None):
             'width': 50,
             'height': 50
         },
-        'ajaxPath': "{}editorajax/{}/".format(settings.H5P_URL, (request['contentId'] if 'contentId' in request else '0')),
+        'ajaxPath': "{}editorajax/{}/".format(
+            settings.H5P_URL,
+            (request['contentId'] if 'contentId' in request else '0')
+        ),
         'libraryPath': "{}h5p/h5peditor/".format(settings.STATIC_URL),
-        'copyrightSemantics': contentValidator.getCopyrightSemantics(),
+        'copyrightSemantics': content_validator.getCopyrightSemantics(),
         'assets': assets,
         'contentRelUrl': '../media/h5pp/content/'}
 
@@ -79,8 +84,7 @@ def h5peditorContent(request, contentId=None):
 
 
 def handleContentUserData(request):
-    framework = H5PDjango(request.user)
-    core = framework.getCore()
+    # framework = H5PDjango(request.user)
     content_id = request.GET['contentId']
     sub_content_id = request.GET['subContentId']
     data_id = request.GET['dataType']
@@ -123,8 +127,9 @@ def handleContentUserData(request):
 
 def getUserData(contentId, subContentId, dataId, userId):
     try:
-        result = h5p_content_user_data.objects.get(user_id=userId, content_main_id=contentId,
-            sub_content_id=subContentId, data_id=dataId)
+        result = h5p_content_user_data.objects.get(
+            user_id=userId, content_main_id=contentId, sub_content_id=subContentId, data_id=dataId
+        )
     except:
         result = False
 
@@ -143,8 +148,10 @@ def saveUserData(contentId, subContentId, dataId, preload, invalidate, data, use
     invalidate = 0 if invalidate == '0' else 1
 
     if not update:
-        h5p_content_user_data.objects.create(user_id=userId, content_main_id=contentId, sub_content_id=subContentId,
-            data_id=dataId, timestamp=time.time(), data=data, preloaded=preload, delete_on_content_change=invalidate)
+        h5p_content_user_data.objects.create(
+            user_id=userId, content_main_id=contentId, sub_content_id=subContentId,
+            data_id=dataId, timestamp=time.time(), data=data, preloaded=preload, delete_on_content_change=invalidate
+        )
     else:
         update.user_id = userId
         update.content_main_id = contentId
@@ -162,8 +169,9 @@ def saveUserData(contentId, subContentId, dataId, preload, invalidate, data, use
 
 
 def deleteUserData(contentId, subContentId, dataId, userId):
-    h5p_content_user_data.objects.get(user_id=userId, content_main_id=contentId, sub_content_id=subContentId,
-        data_id=dataId).delete()
+    h5p_content_user_data.objects.get(
+        user_id=userId, content_main_id=contentId, sub_content_id=subContentId, data_id=dataId
+    ).delete()
 
 
 ##
@@ -186,16 +194,20 @@ def createContent(request, content, params):
 
 
 def getLibraryProperty(library, prop='all'):
-    matches = re.search('(.+)\s(\d+)\.(\d+)$', library)
+    matches = re.search(r'(.+)\s(\d+)\.(\d+)$', library)
     if matches:
-        library_data = {'machineName': matches.group(1), 'majorVersion': matches.group(2),
-            'minorVersion': matches.group(3)}
+        library_data = {
+            'machineName': matches.group(1),
+            'majorVersion': matches.group(2),
+            'minorVersion': matches.group(3)
+        }
         if prop == 'all':
             return library_data
         elif prop == 'libraryId':
-            temp = h5p_libraries.objects.filter(machine_name=library_data['machineName'],
-                                                major_version=library_data['majorVersion'],
-                                                minor_version=library_data['minorVersion']).values('library_id')
+            temp = h5p_libraries.objects.filter(
+                machine_name=library_data['machineName'], major_version=library_data['majorVersion'],
+                minor_version=library_data['minorVersion']
+            ).values('library_id')
             return temp
         else:
             return library_data[prop]

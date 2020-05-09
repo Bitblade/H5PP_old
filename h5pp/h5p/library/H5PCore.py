@@ -83,7 +83,7 @@ class H5PCore:
         self.fullPluginPath = re.sub("/[^/]+[/]?$", "", os.path.dirname(__file__))  # Silly way to filter double slashes
 
         # Standard regex for converting copied files paths
-        self.relativePathRegExp = "^((\.\.\/){1,2})(.*content\/)?(\d+|editor)\/(.+)$"
+        self.relativePathRegExp = r"^((\.\.\/){1,2})(.*content\/)?(\d+|editor)\/(.+)$"
 
         self.librariesJsonData = None
         self.contentJsonData = None
@@ -445,7 +445,7 @@ class H5PCore:
     ##
     @staticmethod
     def library_from_string(library_string):
-        pre = "^([\w0-9\-\.]{1,255})[\-\ ]([0-9]{1,5})\.([0-9]{1,5})$"
+        pre = r"^([\w0-9\-\.]{1,255})[\-\ ]([0-9]{1,5})\.([0-9]{1,5})$"
         res = re.search(pre, library_string)
         if res:
             return {"machineName": res.group(1), "majorVersion": res.group(2), "minorVersion": res.group(3)}

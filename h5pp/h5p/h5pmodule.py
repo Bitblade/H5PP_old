@@ -125,7 +125,7 @@ def h5p_delete(request):
 ##
 def h5p_delete_h5p_content(request, content):
     framework = H5PDjango(request.user)
-    storage = framework.getStorage()
+    storage = framework.getStorageInstance()
     storage.delete_package(content)
 
     # Remove content points
@@ -334,7 +334,7 @@ def h5p_add_files_and_settings(request, embed_type):
     core = interface.getCore()
     preloaded_dependencies = core.load_content_dependencies(content['id'], 'preloaded')
     files = core.get_dependencies_files(preloaded_dependencies)
-    library_list = h5p_dependencies_to_library_list(preloaded_dependencies)
+    # library_list = h5p_dependencies_to_library_list(preloaded_dependencies)
 
     files_assets = {'js': list(), 'css': list()}
     if embed_type == 'div':
@@ -364,7 +364,7 @@ def h5p_add_files_and_settings(request, embed_type):
 # Get a content by request
 ##
 def h5p_get_content(request):
-    interface = H5PDjango(request.user)
+    # interface = H5PDjango(request.user)
     # core = interface.h5pGetInstance('core')
     return {
         'id': h5p_get_content_id(request), 'title': request.GET['title'], 'params': request.GET['json_content'],
@@ -520,7 +520,7 @@ def h5p_embed(request):
     h5p_path = join_url([settings.STATIC_URL, 'h5p/'])
     # The template adds the static URL
     # h5pPath = 'h5p/'
-    core_settings = h5p_get_core_settings(request.user)
+    # core_settings = h5p_get_core_settings(request.user)
     framework = H5PDjango(request.user)
 
     scripts = list()
@@ -542,7 +542,7 @@ def h5p_embed(request):
     core = framework.getCore()
     preloaded_dependencies = core.load_content_dependencies(content['id'])
     files = core.get_dependencies_files(preloaded_dependencies)
-    library_list = h5p_dependencies_to_library_list(preloaded_dependencies)
+    # library_list = h5p_dependencies_to_library_list(preloaded_dependencies)
 
     scripts = scripts + core.get_assets_urls(files['scripts'])
     styles = styles + core.get_assets_urls(files['styles'])

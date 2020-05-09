@@ -14,8 +14,10 @@ class H5PEditorStorage:
         if libraries is not None:
             libraries_with_details = list()
             for library in libraries:
-                details = h5p_libraries.objects.filter(machine_name=library['name'], major_version=library[
-                                                       'majorVersion'], minor_version=library['minorVersion']).values('title', 'runnable', 'restricted', 'tutorial_url')
+                details = h5p_libraries.objects.filter(
+                    machine_name=library['name'], major_version=library['majorVersion'],
+                    minor_version=library['minorVersion']
+                ).values('title', 'runnable', 'restricted', 'tutorial_url')
                 if len(details) > 0:
                     details = details[0]
                     library['tutorialUrl'] = details['tutorial_url']
@@ -46,11 +48,11 @@ class H5PEditorStorage:
         # Load translation field from DB
         cursor = connection.cursor()
         cursor.execute("""
-			SELECT hlt.language_json
-			FROM h5p_libraries_languages hlt
-			JOIN h5p_libraries hl ON hl.library_id = hlt.library_id
-			WHERE hl.machine_name = %s AND hl.major_version = %s AND hl.minor_version = %s AND hlt.language_code = %s
-			""" % ("'" + machineName + "'", majorVersion, minorVersion, "'" + language + "'"))
+            SELECT hlt.language_json
+            FROM h5p_libraries_languages hlt
+            JOIN h5p_libraries hl ON hl.library_id = hlt.library_id
+            WHERE hl.machine_name = %s AND hl.major_version = %s AND hl.minor_version = %s AND hlt.language_code = %s
+            """ % ("'" + machineName + "'", majorVersion, minorVersion, "'" + language + "'"))
 
         result = self.dictfetchall(cursor)
         return result[0]['language_json'] if len(result) > 0 else False

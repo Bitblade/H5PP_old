@@ -9,8 +9,9 @@ from django.views.generic import (FormView, CreateView, TemplateView)
 
 from .forms import LibrariesForm, CreateForm
 from .models import h5p_libraries, h5p_contents, h5p_content_user_data, h5p_points
-from h5pp.h5p.h5pmodule import (include_h5p, h5p_set_started, h5p_set_finished, h5p_get_content_id, h5p_get_list_content, h5p_load,
-                                h5p_delete, h5p_embed, get_user_score, uninstall, export_score)
+from h5pp.h5p.h5pmodule import (include_h5p, h5p_set_started, h5p_set_finished, h5p_get_content_id,
+                                h5p_get_list_content, h5p_load, h5p_delete, h5p_embed, get_user_score,
+                                uninstall, export_score)
 from h5pp.h5p.h5pclasses import H5PDjango
 from h5pp.h5p.editor.h5peditormodule import (h5peditorContent, handleContentUserData)
 from h5pp.h5p.editor.library.h5peditorfile import H5PEditorFile
@@ -121,13 +122,12 @@ class UpdateContentView(FormView):
             return self.form_invalid(form)
 
     def form_valid(self, form):
-
         return HttpResponseRedirect(self.get_success_url(self.pk_url_kwarg))
 
 
 def createView(request, contentId=None):
     if request.user.is_authenticated:
-        editor = h5peditorContent(request, contentId)
+        editor = h5peditorContent(request)
         if request.method == 'POST':
             if contentId is not None:
                 request.POST = request.POST.copy()
@@ -191,7 +191,6 @@ def contentsView(request):
             raise Http404
         h5p_load(request)
         content = include_h5p(request)
-        score = None
 
         if "html" not in content:
             html = '<div>Sorry, preview of H5P content is not yet available.</div>'
@@ -297,7 +296,7 @@ def embedView(request):
 
 
 @csrf_exempt
-def editorAjax(request, contentId):
+def editorAjax(request, content_id):
     data = None
     if request.method == 'POST':
         if 'libraries' in request.GET:
@@ -313,7 +312,7 @@ def editorAjax(request, contentId):
 
             if f.validate():
                 core = framework.getCore()
-                file_id = core.fs.save_file(f, request.POST['contentId'])
+                core.fs.save_file(f, request.POST['contentId'])
 
             data = f.printResult()
             return HttpResponse(data, content_type='application/json')

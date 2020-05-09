@@ -18,20 +18,21 @@ class H5PDjangoEditor:
     ##
     # Constructor for the core editor library
     ##
-    def __init__(self, h5p, storage, basePath, filesDir, editorFilesDir=None):
+    def __init__(self, h5p, storage, base_path, files_dir, editor_files_dir=None):
         self.h5p = h5p
         self.storage = storage
-        self.basePath = basePath
-        self.contentFilesDir = Path(filesDir) / 'content'
-        if editorFilesDir is None:
-            self.editorFilesDir = Path(filesDir) / 'editor'
+        self.basePath = base_path
+        self.contentFilesDir = Path(files_dir) / 'content'
+        if editor_files_dir is None:
+            self.editorFilesDir = Path(files_dir) / 'editor'
         else:
-            self.editorFilesDir = Path(editorFilesDir) / 'editor'
+            self.editorFilesDir = Path(editor_files_dir) / 'editor'
 
     ##
     # This does alot of the same as getLibraries in library/h5pclasses.py. Use that instead ?
     ##
     def getLibraries(self, request):
+        libraries = None
         if 'libraries[]' in request.POST:
             lib = dict(request.POST.lists())
             liblist = list()
@@ -39,29 +40,13 @@ class H5PDjangoEditor:
                 liblist.append(name)
             libraries = list()
             for libraryName in liblist:
-                matches = re.search('(.+)\s(\d+)\.(\d+)$', libraryName)
+                matches = re.search(r'(.+)\s(\d+)\.(\d+)$', libraryName)
                 if matches:
                     libraries.append(
                         {'uberName': libraryName, 'name': matches.group(1), 'majorVersion': matches.group(2),
                          'minorVersion': matches.group(3)})
 
-        libraries = self.storage.getLibraries(libraries if 'libraries' in locals() else None)
-
-        # TODO Remove nonfunctional devmode
-        # if self.h5p.development_mode:
-        #     devLibs = self.h5p.h5pD.getLibraries()
-        #
-        #     for i in range(0, len(libraries)):
-        #         if devLibs:
-        #             lid = libraries[i]['name'] + ' ' + libraries[i]['majorVersion'] + '.' +\
-        #                   libraries[i]['minorVersion']
-        #             if 'lid' in devLibs:
-        #                 libraries[i] = {'uberName': lid, 'name': devLibs[lid]['machineName'],
-        #                                 'title': devLibs[lid]['title'], 'majorVersion': devLibs[lid]['majorVersion'],
-        #                                 'minorVersion': devLibs[lid]['minorVersion'],
-        #                                 'runnable': devLibs[lid]['runnable'],
-        #                                 'restricted': libraries[i]['restricted'],
-        #                                 'tutorialUrl': libraries[i]['tutorialUrl'], 'isOld': libraries[i]['isOld']}
+        libraries = self.storage.getLibraries(libraries)
 
         return json.dumps(libraries)
 
@@ -91,7 +76,7 @@ class H5PDjangoEditor:
         # JavaScripts
         if 'scripts' in files:
             for script in files['scripts']:
-                if re.search('/:\/\//', script['path']):
+                if re.search(r'/:\/\//', script['path']):
                     # External file
                     if 'javascript' not in library_data:
                         library_data['javascript'] = collections.OrderedDict()
@@ -107,7 +92,7 @@ class H5PDjangoEditor:
         # Stylesheets
         if 'styles' in files:
             for css in files['styles']:
-                if re.search('/:\/\//', css['path']):
+                if re.search(r'/:\/\//', css['path']):
                     # External file
                     if 'css' not in library_data:
                         library_data['css'] = dict()
@@ -118,7 +103,7 @@ class H5PDjangoEditor:
                         library_data['css'] = dict()
                     self.buildCssPath(None, url + os.path.dirname(css['path']) + '/')
                     library_data['css'][url + css['path'] + css['version']] = re.sub(
-                        '(?i)url\([\']?(?![a-z]+:|\/+)([^\')]+)[\']?\)', self.buildCssPath,
+                        r'(?i)url\([\']?(?![a-z]+:|\/+)([^\')]+)[\']?\)', self.buildCssPath,
                         self.h5p.fs.get_content(Path(css['path'])))
 
         # Add translations for libraries
@@ -174,25 +159,24 @@ class H5PDjangoEditor:
     ##
     # Move uploaded files, remove old files and update library usage
     ##
-    def processParameters(self, contentId, newLibrary, newParameters, oldLibrary=None, oldParameters=None):
+    def processParameters(self, contentId, new_library, new_parameters, old_library=None, old_parameters=None):
         new_files = list()
         old_files = list()
         field = {'type': 'library'}
-        library_params = {'library': self.h5p.library_to_string(newLibrary), 'params': newParameters}
+        library_params = {'library': self.h5p.library_to_string(new_library), 'params': new_parameters}
         self.processField(field, library_params, new_files)
-        if oldLibrary is not None:
+        if old_library is not None:
             old_semantics = self.h5p.load_library_semantics(
-                oldLibrary['name'], oldLibrary['majorVersion'],
-                oldLibrary['minorVersion'], oldParameters
+                old_library['name'], old_library['majorVersion'],
+                old_library['minorVersion'], old_parameters
             )
 
             # TODO Parameter params unfilled...
             self.processSemantics(old_files, old_semantics, [])
 
             for i in range(0, len(old_files)):
-                if not old_files[i] in new_files and not re.search('(?i)^(\w+:\/\/|\.\.\/)', old_files[i]):
+                if not old_files[i] in new_files and not re.search(r'(?i)^(\w+:\/\/|\.\.\/)', old_files[i]):
                     remove_file = self.contentDirectory + old_files[i]
-                    del remove_file
                     self.storage.removeFile(remove_file)
 
     ##
@@ -242,7 +226,7 @@ class H5PDjangoEditor:
         return
 
     def processFile(self, params, files):
-        editorPath = self.editorFilesDir
+        editor_path = self.editorFilesDir
 
         matches = re.search(self.h5p.relativePathRegExp, params['path'])
         if matches:
@@ -253,7 +237,7 @@ class H5PDjangoEditor:
 
             params['path'] = matches.group(5)
         else:
-            old_path = self.basePath / editorPath / Path(params['path'])
+            old_path = self.basePath / editor_path / Path(params['path'])
             new_path = self.basePath / self.contentDirectory / params['path']
             if not os.path.exists(new_path) and os.path.exists(old_path):
                 shutil.copy(old_path, new_path)
@@ -271,7 +255,7 @@ class H5PDjangoEditor:
         if matches is None:
             return
 
-        dirr = re.sub('(css/|styles/|Styles/|Css/)', 'fonts/', buildBase)
+        dirr = re.sub(r'(css/|styles/|Styles/|Css/)', 'fonts/', buildBase)
         path = dirr + matches.group(1)
 
         return 'url(' + path + ')'
@@ -280,7 +264,7 @@ class H5PDjangoEditor:
     # Parses library data from a string on the form {machineName} {majorVersion}.{minorVersion}
     ##
     def libraryFromString(self, libraryString):
-        pre = '^([\w0-9\-\.]{1,255})[\-\ ]([0-9]{1,5})\.([0-9]{1,5})$'
+        pre = r'^([\w0-9\-\.]{1,255})[\-\ ]([0-9]{1,5})\.([0-9]{1,5})$'
         res = re.search(pre, libraryString)
         if res:
             return {'machineName': res.group(1), 'majorVersion': res.group(2), 'minorVersion': res.group(3)}

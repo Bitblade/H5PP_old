@@ -34,78 +34,78 @@ class H5PContentValidator:
     def getDependencies(self):
         return self.dependencies
 
-    ##
-    # Validate given text value against text semantics.
-    ##
-    def validateText(self, text, semantics):
-        if not isinstance(text, str):
-            text = ''
-
-        if 'tags' in semantics:
-            tags = ['div', 'span', 'p', 'br'] + semantics['tags']
-
-            if 'table' in tags:
-                tags += ['tr', 'td', 'th', 'colgroup', 'thead', 'tbody', 'tfoot']
-            if 'b' in tags and 'strong' not in tags:
-                tags.append('strong')
-            if 'i' in tags and 'em' not in tags:
-                tags.append('em')
-            if 'ul' in tags or 'ol' in tags and 'li' not in tags:
-                tags.append('li')
-            if 'del' in tags or 'strike' in tags and 's' not in tags:
-                tags.append('s')
-
-            stylePatterns = list()
-            if 'font' in semantics:
-                if 'size' in semantics['font']:
-                    stylePatterns.append('(?i)^font-size: *[0-9.]+(em|px|%) *;?$')
-                if 'family' in semantics['font']:
-                    stylePatterns.append('(?i)^font-family: *[a-z0-9," ]+;?$')
-                if 'color' in semantics['font']:
-                    stylePatterns.append('(?i)^color: *(#[a-f0-9]{3}[a-f0-9]{3}?|rgba?\([0-9, ]+\)) *;?$')
-                if 'background' in semantics['font']:
-                    stylePatterns.append('(?i)^background-color: *(#[a-f0-9]{3}[a-f0-9]{3}?|rgba?\([0-9, ]+\)) *;?$')
-                if 'spacing' in semantics['font']:
-                    stylePatterns.append('(?i)^letter-spacing: *[0-9.]+(em|px|%) *;?$')
-                if 'height' in semantics['font']:
-                    stylePatterns.append('(?i)^line-height: *[0-9.]+(em|px|%|) *;?$')
-
-            stylePatterns.append('(?i)^text-align: *(center|left|right);?$')
-
-            # text = self.filterXss(text, tags, stylePatterns)
-        else:
-            text = html.escape(text, True)
-
-        if 'maxLength' in semantics:
-            text = text[0:semantics['maxLength']]
-
-        if not text == '' and 'optional' in semantics and 'regexp' in semantics:
-            pattern = semantics['regexp']['modifiers'] if 'modifiers' in semantics['regexp'] else ''
-            if not re.search(pattern, text):
-                print(('Provided string is not valid according to regexp in semantics. (value: %s, regexp: %s)' % (
-                    text, pattern)))
-                text = ''
+    # ##
+    # # Validate given text value against text semantics.
+    # ##
+    # def validateText(self, text, semantics):
+    #     if not isinstance(text, str):
+    #         text = ''
+    #
+    #     if 'tags' in semantics:
+    #         tags = ['div', 'span', 'p', 'br'] + semantics['tags']
+    #
+    #         if 'table' in tags:
+    #             tags += ['tr', 'td', 'th', 'colgroup', 'thead', 'tbody', 'tfoot']
+    #         if 'b' in tags and 'strong' not in tags:
+    #             tags.append('strong')
+    #         if 'i' in tags and 'em' not in tags:
+    #             tags.append('em')
+    #         if 'ul' in tags or 'ol' in tags and 'li' not in tags:
+    #             tags.append('li')
+    #         if 'del' in tags or 'strike' in tags and 's' not in tags:
+    #             tags.append('s')
+    #
+    #         stylePatterns = list()
+    #         if 'font' in semantics:
+    #             if 'size' in semantics['font']:
+    #                 stylePatterns.append('(?i)^font-size: *[0-9.]+(em|px|%) *;?$')
+    #             if 'family' in semantics['font']:
+    #                 stylePatterns.append('(?i)^font-family: *[a-z0-9," ]+;?$')
+    #             if 'color' in semantics['font']:
+    #                 stylePatterns.append('(?i)^color: *(#[a-f0-9]{3}[a-f0-9]{3}?|rgba?\([0-9, ]+\)) *;?$')
+    #             if 'background' in semantics['font']:
+    #                 stylePatterns.append('(?i)^background-color: *(#[a-f0-9]{3}[a-f0-9]{3}?|rgba?\([0-9, ]+\)) *;?$')
+    #             if 'spacing' in semantics['font']:
+    #                 stylePatterns.append('(?i)^letter-spacing: *[0-9.]+(em|px|%) *;?$')
+    #             if 'height' in semantics['font']:
+    #                 stylePatterns.append('(?i)^line-height: *[0-9.]+(em|px|%|) *;?$')
+    #
+    #         stylePatterns.append('(?i)^text-align: *(center|left|right);?$')
+    #
+    #         # text = self.filterXss(text, tags, stylePatterns)
+    #     else:
+    #         text = html.escape(text, True)
+    #
+    #     if 'maxLength' in semantics:
+    #         text = text[0:semantics['maxLength']]
+    #
+    #     if not text == '' and 'optional' in semantics and 'regexp' in semantics:
+    #         pattern = semantics['regexp']['modifiers'] if 'modifiers' in semantics['regexp'] else ''
+    #         if not re.search(pattern, text):
+    #             print(('Provided string is not valid according to regexp in semantics. (value: %s, regexp: %s)' % (
+    #                 text, pattern)))
+    #             text = ''
 
     ##
     # Validates content files
     ##
-    def validateContentFiles(self, contentPath, isLibrary=False):
+    def validateContentFiles(self, content_path, is_library=False):
         if self.h5pC.disableFileCheck:
             return True
 
         # Scan content directory for files, recurse into sub directories.
-        files = list(set(os.listdir(contentPath)).difference([".", ".."]))
+        files = list(set(os.listdir(content_path)).difference([".", ".."]))
         valid = True
         from h5pp.h5p.library.H5PCore import H5PCore
-        whitelist = self.h5pF.getWhitelist(isLibrary, H5PCore.defaultContentWhitelist,
+        whitelist = self.h5pF.getWhitelist(is_library, H5PCore.defaultContentWhitelist,
                                            H5PCore.defaultLibraryWhitelistExtras)
 
-        wl_regex = "^.*\.(" + re.sub(" ", "|", whitelist) + ")$"
+        wl_regex = r"^.*\.(" + re.sub(" ", "|", whitelist) + ")$"
 
         for f in files:
-            file_path = contentPath / f
+            file_path = content_path / f
             if os.path.isdir(file_path):
-                valid = self.validateContentFiles(file_path, isLibrary) and valid
+                valid = self.validateContentFiles(file_path, is_library) and valid
             else:
                 if not re.search(wl_regex, f.lower()):
                     print(("File \"%s\" not allowed. Only files with the following extension are allowed : %s" % (
@@ -114,100 +114,100 @@ class H5PContentValidator:
 
         return valid
 
-    ##
-    # Validate given value against number semantics
-    ##
-    def validateNumber(self, number, semantics):
-        # Validate that number is indeed a number
-        if not isinstance(number, int):
-            number = 0
-
-        # Check if number is within valid bounds. Move withing bounds if not.
-        if 'min' in semantics and number < semantics['min']:
-            number = semantics['min']
-        if 'max' in semantics and number > semantics['max']:
-            number = semantics['max']
-
-        # Check if number if withing allowed bounds even if step value is set.
-        if 'step' in semantics:
-            text_number = number - (semantics['min'] if 'min' in semantics else 0)
-            rest = text_number % semantics['step']
-            if rest != 0:
-                number = number - rest
-
-        # Check if number has proper number of decimals.
-        if 'decimals' in semantics:
-            number = round(number, semantics['decimals'])
+    # ##
+    # # Validate given value against number semantics
+    # ##
+    # def validateNumber(self, number, semantics):
+    #     # Validate that number is indeed a number
+    #     if not isinstance(number, int):
+    #         number = 0
+    #
+    #     # Check if number is within valid bounds. Move withing bounds if not.
+    #     if 'min' in semantics and number < semantics['min']:
+    #         number = semantics['min']
+    #     if 'max' in semantics and number > semantics['max']:
+    #         number = semantics['max']
+    #
+    #     # Check if number if withing allowed bounds even if step value is set.
+    #     if 'step' in semantics:
+    #         text_number = number - (semantics['min'] if 'min' in semantics else 0)
+    #         rest = text_number % semantics['step']
+    #         if rest != 0:
+    #             number = number - rest
+    #
+    #     # Check if number has proper number of decimals.
+    #     if 'decimals' in semantics:
+    #         number = round(number, semantics['decimals'])
 
     ##
     # Validate given value against boolean semantics
     ##
-    def validateBoolean(self, boolean, semantics):
+    def validateBoolean(self, boolean):
         return isinstance(boolean, bool)
 
-    ##
-    # Validate select values
-    ##
-    def validateSelect(self, select, semantics):
-        optional = semantics['optional'] if 'optional' in semantics else False
-        strict = False
-        from h5pp.h5p.library.H5PCore import H5PCore
-        if 'options' in semantics and not H5PCore.empty(semantics['options']):
-            # We have a strict set of options to choose from.
-            strict = True
-            options = dict()
-            for option in semantics['options']:
-                options[option['value']] = True
+    # ##
+    # # Validate select values
+    # ##
+    # def validateSelect(self, select, semantics):
+    #     optional = semantics['optional'] if 'optional' in semantics else False
+    #     strict = False
+    #     from h5pp.h5p.library.H5PCore import H5PCore
+    #     if 'options' in semantics and not H5PCore.empty(semantics['options']):
+    #         # We have a strict set of options to choose from.
+    #         strict = True
+    #         options = dict()
+    #         for option in semantics['options']:
+    #             options[option['value']] = True
+    #
+    #     if 'multiple' in semantics and semantics['multiple']:
+    #         # Multi-choice generates array of values. Test each one against valid
+    #         # options, if we are strict. First make sure we are working on an
+    #         # array.
+    #         if not isinstance(select, list):
+    #             select = list(select)
+    #
+    #         for key, value in select:
+    #             if strict and not optional and not options[value]:
+    #                 print("Invalid selected option in multi-select.")
+    #                 del select[key]
+    #             else:
+    #                 select[key] = html.escape(value, True)
+    #     else:
+    #         # Single mode. If we get an array in here, we chop off the first
+    #         # element and use that instead.
+    #         if isinstance(select, list):
+    #             select = select[0]
+    #
+    #         if strict and not optional and not options[select]:
+    #             print("Invalid selected option in select.")
+    #             select = semantics[options[0]['value']]
+    #
+    #         select = html.escape(select, True)
 
-        if 'multiple' in semantics and semantics['multiple']:
-            # Multi-choice generates array of values. Test each one against valid
-            # options, if we are strict. First make sure we are working on an
-            # array.
-            if not isinstance(select, list):
-                select = list(select)
-
-            for key, value in select:
-                if strict and not optional and not options[value]:
-                    print("Invalid selected option in multi-select.")
-                    del select[key]
-                else:
-                    select[key] = html.escape(value, True)
-        else:
-            # Single mode. If we get an array in here, we chop off the first
-            # element and use that instead.
-            if isinstance(select, list):
-                select = select[0]
-
-            if strict and not optional and not options[select]:
-                print("Invalid selected option in select.")
-                select = semantics[options[0]['value']]
-
-            select = html.escape(select, True)
-
-    ##
-    # Validate given list value against list semantics.
-    # Will recurse into validating each item in the list according to the type.
-    ##
-    def validateList(self, plist, semantics):
-        field = semantics['field']
-        func = self.typeMap[field['type']]
-
-        if not isinstance(plist, list):
-            plist = list()
-
-        # Validate each element in list.
-        for value in plist:
-            eval('self.' + func + '(value, field)')
-
-        if len(plist) == 0:
-            plist = None
+    # ##
+    # # Validate given list value against list semantics.
+    # # Will recurse into validating each item in the list according to the type.
+    # ##
+    # def validateList(self, plist, semantics):
+    #     field = semantics['field']
+    #     func = self.typeMap[field['type']]
+    #
+    #     if not isinstance(plist, list):
+    #         plist = list()
+    #
+    #     # Validate each element in list.
+    #     for value in plist:
+    #         eval('self.' + func + '(value, field)')
+    #
+    #     if len(plist) == 0:
+    #         plist = None
 
     ##
     # Validate a file like object, such as video, image, audio and file.
     ##
-    def validateFilelike(self, f, semantics, typeValidKeys=None):
-        if typeValidKeys is None:
-            typeValidKeys = []
+    def validateFilelike(self, f, semantics, type_valid_keys=None):
+        if type_valid_keys is None:
+            type_valid_keys = []
 
         # Do not allow to use files from other content folders.
         matches = re.search(self.h5pC.relativePathRegExp, f['path'])
@@ -221,7 +221,7 @@ class H5PContentValidator:
 
         # Remove attributes that should not exist, they may contain JSON escape
         # code.
-        valid_keys = ["path", "mime", "copyright"] + typeValidKeys
+        valid_keys = ["path", "mime", "copyright"] + type_valid_keys
         if 'extraAttributes' in semantics:
             valid_keys = valid_keys + semantics['extraAttributes']
 
@@ -294,14 +294,14 @@ class H5PContentValidator:
                     continue
 
                 found = False
-                foundField = None
+                # foundField = None
                 for field in semantics['fields']:
                     if field['name'] == key:
                         if 'optional' in semantics:
                             field['optional'] = True
                         func = self.typeMap[field['type']]
                         found = True
-                        foundField = field
+                        # foundField = field
                         break
                 if found:
                     if func:
@@ -333,7 +333,7 @@ class H5PContentValidator:
 
     def validateLibrary(self, value, semantics):
         if "library" not in value:
-            value = None
+            # value = None # TODO This has no effect... Someone probably thought this worked by reference. Danger!
             return
 
         if not value['library'] in semantics['options']:
@@ -351,14 +351,17 @@ class H5PContentValidator:
             if message is None:
                 message = 'The H5P library %s used in the content is not valid.' % value['library']
                 print(message)
-                value = None
+                # value = None # TODO This has no effect... Someone probably thought this worked by reference. Danger!
                 return
 
         if not value['library'] in self.libraries:
             lib_spec = self.h5pC.library_from_string(value['library'])
-            library = self.h5pC.load_library(lib_spec['machine_name'], lib_spec['majorVersion'], lib_spec['minorVersion'])
-            library['semantics'] = self.h5pC.load_library_semantics(lib_spec['machine_name'], lib_spec['majorVersion'],
-                                                                    lib_spec['minorVersion'])
+            library = self.h5pC.load_library(
+                lib_spec['machine_name'], lib_spec['majorVersion'], lib_spec['minorVersion']
+            )
+            library['semantics'] = self.h5pC.load_library_semantics(
+                lib_spec['machine_name'], lib_spec['majorVersion'], lib_spec['minorVersion']
+            )
             self.libraries[value['library']] = library
         else:
             library = self.libraries[value['library']]
@@ -370,7 +373,7 @@ class H5PContentValidator:
         self.filterParams(value, valid_keys)
 
         if ("subContentId" in value and not re.search(
-                '(?i)^\{?[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}\}?$', value["subContentId"])):
+                r'(?i)^\{?[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}\}?$', value["subContentId"])):
             del (value["subContentId"])
 
         dep_key = 'preloaded-' + library['machine_name']
@@ -388,85 +391,85 @@ class H5PContentValidator:
             if key not in whitelist:
                 del params[key]
 
-    ##
-    # Prevent cross-site-scripting (XSS) vulnerabilities
-    ##
-    def filterXss(self, string, allowedTags=None, allowedStyles=False):
-        if allowed_tags is None:
-            allowed_tags = ['a', 'em', 'strong', 'cite', 'blockquote', 'code', 'ul', 'ol', 'li', 'dl', 'dt', 'dd']
+    # ##
+    # # Prevent cross-site-scripting (XSS) vulnerabilities
+    # ##
+    # def filterXss(self, string, allowed_tags=None, allowedStyles=False):
+    #     if allowed_tags is None:
+    #         allowed_tags = ['a', 'em', 'strong', 'cite', 'blockquote', 'code', 'ul', 'ol', 'li', 'dl', 'dt', 'dd']
+    #
+    #     if len(string) == 0:
+    #         return string
+    #
+    #     # Only operate on valid UTF-8 strings
+    #     if not re.search('(?us)^.', string):
+    #         return ''
+    #
+    #     # Remove NULL characters (ignored by some browsers)
+    #     string = string.replace(chr(0), '')
+    #     # Remove Netscape 4 JS entities
+    #     string = re.sub(r'%&\s*\{[^}]*(\)\s*;?|$)%', '', string)
+    #
+    #     # Defuse all HTML entities
+    #     string = string.replace('&', '&amp;')
+    #     # Change back only well-formed entities in our whitelist
+    #     # Deciman numeric entities
+    #     string = re.sub(r'&amp;#([0-9]+;)', '&#\1', string)
+    #     # Hexadecimal numeric entities
+    #     string = re.sub(r'&amp;#[Xx]0*((?:[0-9A-Fa-f]{2})+;)', '&#x\1', string)
+    #     # Named entities
+    #     string = re.sub(r'&amp;([A-Za-z][A-Za-z0-9]*;)', '&\1', string)
+    #
+    #     return re.sub(r'%(<(?=[^a-zA-Z!/])|<!--.*?-->|<[^>]*(>|$)|>)%x',
+    #                   lambda match: self.filterXssSplit(match, allowed_tags, allowedStyles), string)
 
-        if len(string) == 0:
-            return string
-
-        # Only operate on valid UTF-8 strings
-        if not re.search('(?us)^.', string):
-            return ''
-
-        # Remove NULL characters (ignored by some browsers)
-        string = string.replace(chr(0), '')
-        # Remove Netscape 4 JS entities
-        string = re.sub('%&\s*\{[^}]*(\)\s*;?|$)%', '', string)
-
-        # Defuse all HTML entities
-        string = string.replace('&', '&amp;')
-        # Change back only well-formed entities in our whitelist
-        # Deciman numeric entities
-        string = re.sub('&amp;#([0-9]+;)', '&#\1', string)
-        # Hexadecimal numeric entities
-        string = re.sub('&amp;#[Xx]0*((?:[0-9A-Fa-f]{2})+;)', '&#x\1', string)
-        # Named entities
-        string = re.sub('&amp;([A-Za-z][A-Za-z0-9]*;)', '&\1', string)
-
-        return re.sub('%(<(?=[^a-zA-Z!/])|<!--.*?-->|<[^>]*(>|$)|>)%x',
-                      lambda match: self.filterXssSplit(match, allowed_tags, allowedStyles), string)
-
-    ##
-    # Process an HTML tag
-    ##
-    def filterXssSplit(self, match, allowedTags, allowedStyles):
-        string = match[1]
-
-        if string[0:1] != '<':
-            # We matched a lone ">" character
-            return '&gt;'
-        elif len(string) == 1:
-            # We matched a lone "<" character
-            return '&lt;'
-
-        matches = re.search('%^<\s*(/\s*)?([a-zA-Z0-9\-]+)([^>]*)>?|(<!--.*?-->)$%', string)
-        if not matches:
-            # Seriously malformed
-            return ''
-
-        slash = matches.group(0).strip()
-        elem = matches.group(1)
-        attr_list = matches.group(2)
-        comment = matches.group(3)
-
-        if comment:
-            elem = '!--'
-
-        if not elem.lower() in allowedTags:
-            # Disallowed HTML element
-            return ''
-
-        if comment:
-            return comment
-
-        if slash != '':
-            return '</' + elem + '>'
-
-        # Is there a closing XHTML slash at the end of the attributes ?
-        attr_list = re.sub('%(\s?)/\s*$%', '\1', attr_list, -1)
-        xhtml_slash = '/' if attr_list else ''
-
-        # Clean up attributes
-        attr2 = ' '.join(
-            self.filterXssAttributes(attr_list, allowedStyles if elem in self.allowed_styleable_tags else False))
-        attr2 = re.sub('[<>]', '', attr2)
-        attr2 = ' ' + attr2 if len(attr2) else ''
-
-        return '<' + elem + attr2 + xhtml_slash + '>'
+    # ##
+    # # Process an HTML tag
+    # ##
+    # def filterXssSplit(self, match, allowedTags, allowedStyles):
+    #     string = match[1]
+    #
+    #     if string[0:1] != '<':
+    #         # We matched a lone ">" character
+    #         return '&gt;'
+    #     elif len(string) == 1:
+    #         # We matched a lone "<" character
+    #         return '&lt;'
+    #
+    #     matches = re.search(r'^<\s*(/\s*)?([a-zA-Z0-9\-]+)([^>]*)>?|(<!--.*?-->)$', string)
+    #     if not matches:
+    #         # Seriously malformed
+    #         return ''
+    #
+    #     slash = matches.group(0).strip()
+    #     elem = matches.group(1)
+    #     attr_list = matches.group(2)
+    #     comment = matches.group(3)
+    #
+    #     if comment:
+    #         elem = '!--'
+    #
+    #     if not elem.lower() in allowedTags:
+    #         # Disallowed HTML element
+    #         return ''
+    #
+    #     if comment:
+    #         return comment
+    #
+    #     if slash != '':
+    #         return '</' + elem + '>'
+    #
+    #     # Is there a closing XHTML slash at the end of the attributes ?
+    #     attr_list = re.sub(r'%(\s?)/\s*$%', '\1', attr_list, -1)
+    #     xhtml_slash = '/' if attr_list else ''
+    #
+    #     # Clean up attributes
+    #     attr2 = ' '.join(
+    #         self.filterXssAttributes(attr_list, allowedStyles if elem in self.allowed_styleable_tags else False))
+    #     attr2 = re.sub('[<>]', '', attr2)
+    #     attr2 = ' ' + attr2 if len(attr2) else ''
+    #
+    #     return '<' + elem + attr2 + xhtml_slash + '>'
 
     def getCopyrightSemantics(self):
 

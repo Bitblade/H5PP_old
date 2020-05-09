@@ -55,13 +55,12 @@ class H5PDevelopment:
     ##
     # Get contents of file.
     ##
-    # TODO Rewrite to use pathlib
     @staticmethod
     def get_file_contents(path: Path):
-        if not os.path.exists(path):
+        if not path.exists():
             return None
 
-        contents = open(str(path)).read(1000)
+        contents = path.open().read(1000)
         if not contents:
             return None
 
