@@ -70,7 +70,7 @@ def h5peditorContent(request, contentId=None):
         'assets': assets,
         'contentRelUrl': '../media/h5pp/content/'}
 
-    return {'editor': json.dumps(editor), 'core_assets': core_assets, 'assets': assets, 'add': add}
+    return {'editor': json.dumps(editor), 'coreAssets': core_assets, 'assets': assets, 'add': add}
 
 
 ##
