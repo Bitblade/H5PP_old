@@ -50,3 +50,10 @@ class EventsAdmin(admin.ModelAdmin):
 
 
 admin.site.register(h5p_events, EventsAdmin)
+
+
+class ContentUserDataAdmin(admin.ModelAdmin):
+    list_display = ('user_id', 'content_main_id', 'data_id', 'data')
+
+
+admin.site.register(h5p_content_user_data, ContentUserDataAdmin)
