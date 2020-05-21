@@ -73,7 +73,7 @@ class H5PDefaultStorage:
     # TODO Remove devmode
     # MLD: Method contains devmode references, but I'm leaving them in as they do no harm and could
     # help in the future
-    def export_library(self, library, target: Path, development_path: Path=None):
+    def export_library(self, library, target: Path, development_path: Path = None):
         folder = self.library_to_string(library, True)
 
         if development_path is None:
@@ -147,32 +147,32 @@ class H5PDefaultStorage:
     def library_to_string(library, format_as_folder_name=False):
         separator = '-' if format_as_folder_name else ' '
 
-        if 'machine_name' in library:
-            return library['machine_name'] + separator + str(library['major_version']) + '.' + str(library['minor_version'])
-        else:
-            return library['machineName'] + separator + str(library['majorVersion']) + '.' + str(library['minorVersion'])
+        if 'machine_name' not in library:
+            return f'{library["machineName"]}{separator}{str(library["majorVersion"])}.{str(library["minorVersion"])}'
+
+        return f'{library["machine_name"]}{separator}{str(library["major_version"])}.{str(library["minor_version"])}'
 
     ##
     # Save files uploaded through the editor.
     ##
     # TODO Improve
     @staticmethod
-    def save_file(files, contentid, _=None):
+    def save_file(files, content_id, _=None):
         file_data = files.getData()
         base_path = settings.H5P_STORAGE_ROOT
-        if file_data is not None and contentid == '0':
+        if file_data is not None and content_id == '0':
             directory = base_path/'editor'/files.getType() + 's'
             file = directory/files.getName()
             directory.mkdir(exist_ok=True)
             file.write_bytes(file_data)
 
-        elif file_data is not None and contentid != '0':
-            directory = base_path/'content'/str(contentid)/files.getType() + 's'
+        elif file_data is not None and content_id != '0':
+            directory = base_path / 'content' / str(content_id) / files.getType() + 's'
             file = directory/files.getName()
             directory.mkdir(exist_ok=True)
             file.write_bytes(file_data)
 
-        elif contentid == '0':
+        elif content_id == '0':
             directory = base_path/'editor'/files.getType() + 's'
             file = directory/files.getName()
             directory.mkdir(exist_ok=True)
@@ -182,7 +182,7 @@ class H5PDefaultStorage:
                     pointer.write(chunk)
 
         else:
-            directory = base_path/'content'/str(contentid)/files.getType() + 's'
+            directory = base_path / 'content' / str(content_id) / files.getType() + 's'
             file = directory/files.getName()
             content = files.getFile()
             directory.mkdir(exist_ok=True)
