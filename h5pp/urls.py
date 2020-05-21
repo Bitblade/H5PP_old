@@ -10,7 +10,8 @@ urlpatterns = [  # Base
     url(r'^home/$', TemplateView.as_view(template_name="h5p/home.html"), name="h5phome"),
 
     # Contents and Libraries
-    url(r'^libraries/$', librariesView, name="h5plibraries"), url(r'^listContents/$', listView, name="h5plistContents"),
+    url(r'^libraries/$', librariesView, name="h5plibraries"),
+    url(r'^listContents/$', listView, name="h5plistContents"),
     url(r'^content/$', contentsView, name='h5pcontent'),
     # url(r'^content/(?P<content_id>\d+)/$', login_required(ContentDetailView.as_view()), name="h5pcontent"),
     url(r'^content/(?P<content_id>\d+)/$', ContentDetailView.as_view(), name="h5pcontent"),
@@ -19,10 +20,10 @@ urlpatterns = [  # Base
     # url(r'^create/$', login_required(CreateContentView.as_view()), name="h5pcreate"),
     url(r'^create/$', CreateContentView.as_view(), name="h5pcreate"),
     # url(r'^update/(?P<content_id>\d+)/$', login_required(UpdateContentView.as_view()), name="h5pedit"),
-    url(r'^create/(?P<contentId>\d+)/$', createView, name='h5pedit'),
+    url(r'^create/(?P<content_id>\d+)/$', createView, name='h5pedit'),
 
     # Users score
-    url(r'^score/(?P<contentId>\d+)/$', scoreView, name='h5pscore'),  # Embed page
+    url(r'^score/(?P<content_id>\d+)/$', scoreView, name='h5pscore'),  # Embed page
     url(r'^embed/$', embedView, name='h5pembed'),
 
     # Ajax

@@ -44,7 +44,7 @@ class H5PEditorStorage:
     # Load language file(JSON) from database.
     # This is used to translate the editor fields(title, description, etc...)
     ##
-    def getLanguage(self, machineName, majorVersion, minorVersion, language):
+    def getLanguage(self, machine_name, major_version, minor_version, language):
         # Load translation field from DB
         cursor = connection.cursor()
         cursor.execute("""
@@ -52,15 +52,15 @@ class H5PEditorStorage:
             FROM h5p_libraries_languages hlt
             JOIN h5p_libraries hl ON hl.library_id = hlt.library_id
             WHERE hl.machine_name = %s AND hl.major_version = %s AND hl.minor_version = %s AND hlt.language_code = %s
-            """ % ("'" + machineName + "'", majorVersion, minorVersion, "'" + language + "'"))
+            """ % ("'" + machine_name + "'", major_version, minor_version, "'" + language + "'"))
 
-        result = self.dictfetchall(cursor)
+        result = self.dict_fetch_all(cursor)
         return result[0]['language_json'] if len(result) > 0 else False
 
     ##
     # Returns all rows from a cursor as a dict
     ##
-    def dictfetchall(self, cursor):
+    def dict_fetch_all(self, cursor):
         desc = cursor.description
         return [
             dict(list(zip([col[0] for col in desc], row)))

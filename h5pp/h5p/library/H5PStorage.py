@@ -8,7 +8,7 @@ class H5PStorage:
     contentId = None  # Quick fix so WP can get ID of new content.
 
     ##
-    # Constructeur for the H5PStorage
+    # Constructor for the H5PStorage
     ##
     def __init__(self, framework, core):
         self.h5p_framework = framework
@@ -90,7 +90,7 @@ class H5PStorage:
                     continue
 
             else:
-                print("Ajout de : " + lib_string)
+                print("Adding : " + lib_string)
             # Indicate that the dependencies of self library should be saved.
             library["saveDependencies"] = True
             # Save library meta data
@@ -161,7 +161,7 @@ class H5PStorage:
     ##
     # Copy/clone an H5P package
     #
-    # May for instance be used if the content is being revisioned without
+    # May for instance be used if the content is being revised without
     # uploading a new H5P package
     ##
     def copy_package(self, content_id, source_id, content_main_id=None):

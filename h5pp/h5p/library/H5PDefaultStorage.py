@@ -157,22 +157,22 @@ class H5PDefaultStorage:
     ##
     # TODO Improve
     @staticmethod
-    def save_file(files, contentid, _=None):
+    def save_file(files, content_id, _=None):
         file_data = files.getData()
         base_path = settings.H5P_STORAGE_ROOT
-        if file_data is not None and contentid == '0':
+        if file_data is not None and content_id == '0':
             directory = base_path/'editor'/files.getType() + 's'
             file = directory/files.getName()
             directory.mkdir(exist_ok=True)
             file.write_bytes(file_data)
 
-        elif file_data is not None and contentid != '0':
-            directory = base_path/'content'/str(contentid)/files.getType() + 's'
+        elif file_data is not None and content_id != '0':
+            directory = base_path / 'content' / str(content_id) / files.getType() + 's'
             file = directory/files.getName()
             directory.mkdir(exist_ok=True)
             file.write_bytes(file_data)
 
-        elif contentid == '0':
+        elif content_id == '0':
             directory = base_path/'editor'/files.getType() + 's'
             file = directory/files.getName()
             directory.mkdir(exist_ok=True)
@@ -182,7 +182,7 @@ class H5PDefaultStorage:
                     pointer.write(chunk)
 
         else:
-            directory = base_path/'content'/str(contentid)/files.getType() + 's'
+            directory = base_path / 'content' / str(content_id) / files.getType() + 's'
             file = directory/files.getName()
             content = files.getFile()
             directory.mkdir(exist_ok=True)

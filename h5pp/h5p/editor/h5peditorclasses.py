@@ -29,17 +29,17 @@ class H5PDjangoEditor:
             self.editorFilesDir = Path(editor_files_dir) / 'editor'
 
     ##
-    # This does alot of the same as getLibraries in library/h5pclasses.py. Use that instead ?
+    # This does a lot of the same as getLibraries in library/H5PClasses.py. Use that instead ?
     ##
     def getLibraries(self, request):
         libraries = None
         if 'libraries[]' in request.POST:
             lib = dict(request.POST.lists())
-            liblist = list()
+            lib_list = list()
             for name in lib['libraries[]']:
-                liblist.append(name)
+                lib_list.append(name)
             libraries = list()
-            for libraryName in liblist:
+            for libraryName in lib_list:
                 matches = re.search(r'(.+)\s(\d+)\.(\d+)$', libraryName)
                 if matches:
                     libraries.append(
@@ -53,11 +53,11 @@ class H5PDjangoEditor:
     ##
     # Get all scripts, css and semantics data for a library
     ##
-    def getLibraryData(self, machineName, majorVersion, minorVersion, langageCode, prefix=''):
-        libraries = self.findEditorLibraries(machineName, majorVersion, minorVersion)
+    def getLibraryData(self, machine_name, major_version, minor_version, language_code, prefix=''):
+        libraries = self.findEditorLibraries(machine_name, major_version, minor_version)
         library_data = dict()
-        library_data['semantics'] = self.h5p.load_library_semantics(machineName, majorVersion, minorVersion)
-        library_data['language'] = self.getLibraryLanguage(machineName, majorVersion, minorVersion, langageCode)
+        library_data['semantics'] = self.h5p.load_library_semantics(machine_name, major_version, minor_version)
+        library_data['language'] = self.getLibraryLanguage(machine_name, major_version, minor_version, language_code)
 
         # TODO Fix or remove nonfunctional aggregateAssets tech
         # aggregateAssets = self.h5p.aggregateAssets
@@ -76,7 +76,7 @@ class H5PDjangoEditor:
         # JavaScripts
         if 'scripts' in files:
             for script in files['scripts']:
-                if re.search(r'/:\/\//', script['path']):
+                if re.search(r'/://', script['path']):
                     # External file
                     if 'javascript' not in library_data:
                         library_data['javascript'] = collections.OrderedDict()
@@ -92,7 +92,7 @@ class H5PDjangoEditor:
         # Stylesheets
         if 'styles' in files:
             for css in files['styles']:
-                if re.search(r'/:\/\//', css['path']):
+                if re.search(r'/:///', css['path']):
                     # External file
                     if 'css' not in library_data:
                         library_data['css'] = dict()
@@ -103,13 +103,13 @@ class H5PDjangoEditor:
                         library_data['css'] = dict()
                     self.buildCssPath(None, url + os.path.dirname(css['path']) + '/')
                     library_data['css'][url + css['path'] + css['version']] = re.sub(
-                        r'(?i)url\([\']?(?![a-z]+:|\/+)([^\')]+)[\']?\)', self.buildCssPath,
+                        r'(?i)url\([\']?(?![a-z]+:|/+)([^\')]+)[\']?\)', self.buildCssPath,
                         self.h5p.fs.get_content(Path(css['path'])))
 
         # Add translations for libraries
         for key, library in list(libraries.items()):
             language = self.getLibraryLanguage(library['machine_name'], library['major_version'],
-                                               library['minor_version'], langageCode)
+                                               library['minor_version'], language_code)
             if language is not None:
                 lang = '; H5PEditor.language["' + library['machine_name'] + '"] = ' + language + ';'
                 library_data['javascript'][lang] = lang
@@ -159,7 +159,7 @@ class H5PDjangoEditor:
     ##
     # Move uploaded files, remove old files and update library usage
     ##
-    def processParameters(self, contentId, new_library, new_parameters, old_library=None, old_parameters=None):
+    def processParameters(self, content_Id, new_library, new_parameters, old_library=None, old_parameters=None):
         new_files = list()
         old_files = list()
         field = {'type': 'library'}
@@ -175,7 +175,7 @@ class H5PDjangoEditor:
             self.processSemantics(old_files, old_semantics, [])
 
             for i in range(0, len(old_files)):
-                if not old_files[i] in new_files and not re.search(r'(?i)^(\w+:\/\/|\.\.\/)', old_files[i]):
+                if not old_files[i] in new_files and not re.search(r'(?i)^(\w+://|\.\./)', old_files[i]):
                     remove_file = self.contentDirectory + old_files[i]
                     self.storage.removeFile(remove_file)
 

@@ -11,7 +11,7 @@ def empty(variable):
     return False
 
 
-def isset(variable):
+def is_set(variable):
     return variable in locals() or variable in globals()
 
 # TODO Remove seemingly unused method
@@ -108,7 +108,7 @@ class H5PDevelopment:
                 # warnings.
                 types = ['preloaded', 'dynamic', 'editor']
                 for dtype in types:
-                    if isset(library[dtype + 'Dependencies']):
+                    if is_set(library[dtype + 'Dependencies']):
                         self.h5p_framework.saveLibraryDependencies(
                             library['libraryId'], library[dtype + 'Dependencies'], dtype
                         )
@@ -125,7 +125,7 @@ class H5PDevelopment:
         # TODO Remove seemingly unused method
         # def get_library(name, major_version, minor_version):
         #     lib = H5PDevelopment.library_to_string(name, major_version, minor_version)
-        #     return self.libraries[lib] if isset(self.libraries[lib]) else None
+        #     return self.libraries[lib] if is_set(self.libraries[lib]) else None
 
         ##
         # Get semantics for the given library.
@@ -133,7 +133,7 @@ class H5PDevelopment:
         # TODO Remove seemingly unused method
         # def get_semantics(name, major_version, minor_version):
         #     lib = H5PDevelopment.library_to_string(name, major_version, minor_version)
-        #     if not isset(self.libraries[lib]):
+        #     if not is_set(self.libraries[lib]):
         #         return None
         #
         #     return self.get_file_contents(self.filesPath + self.libraries[lib]['path'] + '/semantics.json')
@@ -143,7 +143,7 @@ class H5PDevelopment:
         # TODO Remove seemingly unused method
         # def get_language(name, major_version, minor_version, language):
         #     lib = H5PDevelopment.library_to_string(name, major_version, minor_version)
-        #     if not isset(self.libraries[lib]):
+        #     if not is_set(self.libraries[lib]):
         #         return None
         #
         #     return self.get_file_contents(

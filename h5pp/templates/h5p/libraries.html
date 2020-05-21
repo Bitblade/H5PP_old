@@ -11,10 +11,10 @@
 	</style>
 	<script>
 		window.onload = function() {
-			var fileInput = document.getElementById("id_h5p");
-			var button = document.getElementsByClassName("upload-libraries")[0];
-			var result = document.getElementsByClassName("file-return")[0];
-			var submit = document.getElementsByClassName("submit")[0];
+			const fileInput = document.getElementById("id_h5p");
+			const button = document.getElementsByClassName("upload-libraries")[0];
+			const result = document.getElementsByClassName("file-return")[0];
+			const submit = document.getElementsByClassName("submit")[0];
 
 			button.addEventListener( "keydown", function(event) {
 				if(event.keyCode == 13 || event.keyCode == 32) {
@@ -29,12 +29,12 @@
 				result.innerHTML = this.value;
 			});
 			submit.addEventListener( "click", function(event) {
-				loader = document.getElementsByClassName("loader")[0];
+				const loader = document.getElementsByClassName("loader")[0];
 				loader.style.display = 'block';
 				result.innerHTML = '';
 			});
 
-			var searchbar = document.getElementById('searchbar');
+			const searchbar = document.getElementById('searchbar');
                         if (searchbar) {
   		            searchbar.addEventListener("keyup", function(event) {
 				var input, filter, table, tr, td, i;
@@ -54,7 +54,8 @@
 					}
 				}
 			    });   
-		};    }
+		}
+    }
 	</script>
 {% endblock head %}
 {% block body %}

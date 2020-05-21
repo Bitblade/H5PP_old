@@ -15,10 +15,10 @@ class H5PContentValidator:
     def __init__(self, framework, core):
         self.h5pF = framework
         self.h5pC = core
-        self.typeMap = {"text": "validateText", "number": "validateNumber", "boolean": "validateBoolean",
-                        "list": "validateList", "group": "validateGroup", "file": "validateFile",
-                        "image": "validateImage", "video": "validateVideo", "audio": "validateAudio",
-                        "select": "validateSelect", "library": "validateLibrary"}
+        self.typeMap = {"text": self.validateText, "number": self.validateNumber, "boolean": self.validateBoolean,
+                        "list": self.validateList, "group": self.validateGroup, "file": self.validateFile,
+                        "image": self.validateImage, "video": self.validateVideo, "audio": self.validateAudio,
+                        "select": self.validateSelect, "library": self.validateLibrary}
         self.nextWeight = 1
 
         # Keep track of the libraries we load to avoid loading it multiple
@@ -34,57 +34,57 @@ class H5PContentValidator:
     def getDependencies(self):
         return self.dependencies
 
-    # ##
-    # # Validate given text value against text semantics.
-    # ##
-    # def validateText(self, text, semantics):
-    #     if not isinstance(text, str):
-    #         text = ''
-    #
-    #     if 'tags' in semantics:
-    #         tags = ['div', 'span', 'p', 'br'] + semantics['tags']
-    #
-    #         if 'table' in tags:
-    #             tags += ['tr', 'td', 'th', 'colgroup', 'thead', 'tbody', 'tfoot']
-    #         if 'b' in tags and 'strong' not in tags:
-    #             tags.append('strong')
-    #         if 'i' in tags and 'em' not in tags:
-    #             tags.append('em')
-    #         if 'ul' in tags or 'ol' in tags and 'li' not in tags:
-    #             tags.append('li')
-    #         if 'del' in tags or 'strike' in tags and 's' not in tags:
-    #             tags.append('s')
-    #
-    #         stylePatterns = list()
-    #         if 'font' in semantics:
-    #             if 'size' in semantics['font']:
-    #                 stylePatterns.append('(?i)^font-size: *[0-9.]+(em|px|%) *;?$')
-    #             if 'family' in semantics['font']:
-    #                 stylePatterns.append('(?i)^font-family: *[a-z0-9," ]+;?$')
-    #             if 'color' in semantics['font']:
-    #                 stylePatterns.append('(?i)^color: *(#[a-f0-9]{3}[a-f0-9]{3}?|rgba?\([0-9, ]+\)) *;?$')
-    #             if 'background' in semantics['font']:
-    #                 stylePatterns.append('(?i)^background-color: *(#[a-f0-9]{3}[a-f0-9]{3}?|rgba?\([0-9, ]+\)) *;?$')
-    #             if 'spacing' in semantics['font']:
-    #                 stylePatterns.append('(?i)^letter-spacing: *[0-9.]+(em|px|%) *;?$')
-    #             if 'height' in semantics['font']:
-    #                 stylePatterns.append('(?i)^line-height: *[0-9.]+(em|px|%|) *;?$')
-    #
-    #         stylePatterns.append('(?i)^text-align: *(center|left|right);?$')
-    #
-    #         # text = self.filterXss(text, tags, stylePatterns)
-    #     else:
-    #         text = html.escape(text, True)
-    #
-    #     if 'maxLength' in semantics:
-    #         text = text[0:semantics['maxLength']]
-    #
-    #     if not text == '' and 'optional' in semantics and 'regexp' in semantics:
-    #         pattern = semantics['regexp']['modifiers'] if 'modifiers' in semantics['regexp'] else ''
-    #         if not re.search(pattern, text):
-    #             print(('Provided string is not valid according to regexp in semantics. (value: %s, regexp: %s)' % (
-    #                 text, pattern)))
-    #             text = ''
+    ##
+    # Validate given text value against text semantics.
+    ##
+    def validateText(self, text, semantics):
+        if not isinstance(text, str):
+            text = ''
+
+        if 'tags' in semantics:
+            tags = ['div', 'span', 'p', 'br'] + semantics['tags']
+
+            if 'table' in tags:
+                tags += ['tr', 'td', 'th', 'colgroup', 'thead', 'tbody', 'tfoot']
+            if 'b' in tags and 'strong' not in tags:
+                tags.append('strong')
+            if 'i' in tags and 'em' not in tags:
+                tags.append('em')
+            if 'ul' in tags or 'ol' in tags and 'li' not in tags:
+                tags.append('li')
+            if 'del' in tags or 'strike' in tags and 's' not in tags:
+                tags.append('s')
+
+            style_patterns = list()
+            if 'font' in semantics:
+                if 'size' in semantics['font']:
+                    style_patterns.append(r'(?i)^font-size: *[0-9.]+(em|px|%) *;?$')
+                if 'family' in semantics['font']:
+                    style_patterns.append(r'(?i)^font-family: *[a-z0-9," ]+;?$')
+                if 'color' in semantics['font']:
+                    style_patterns.append(r'(?i)^color: *(#[a-f0-9]{3}[a-f0-9]{3}?|rgba?\([0-9, ]+\)) *;?$')
+                if 'background' in semantics['font']:
+                    style_patterns.append(r'(?i)^background-color: *(#[a-f0-9]{3}[a-f0-9]{3}?|rgba?\([0-9, ]+\)) *;?$')
+                if 'spacing' in semantics['font']:
+                    style_patterns.append(r'(?i)^letter-spacing: *[0-9.]+(em|px|%) *;?$')
+                if 'height' in semantics['font']:
+                    style_patterns.append(r'(?i)^line-height: *[0-9.]+(em|px|%|) *;?$')
+
+            style_patterns.append(r'(?i)^text-align: *(center|left|right);?$')
+
+            # text = self.filterXss(text, tags, style_patterns)
+        else:
+            text = html.escape(text, True)
+
+        if 'maxLength' in semantics:
+            text = text[0:semantics['maxLength']]
+
+        if not text == '' and 'optional' in semantics and 'regexp' in semantics:
+            pattern = semantics['regexp']['modifiers'] if 'modifiers' in semantics['regexp'] else ''
+            if not re.search(pattern, text):
+                print(('Provided string is not valid according to regexp in semantics. (value: %s, regexp: %s)' % (
+                    text, pattern)))
+                text = ''
 
     ##
     # Validates content files
@@ -96,9 +96,7 @@ class H5PContentValidator:
         # Scan content directory for files, recurse into sub directories.
         files = list(set(os.listdir(content_path)).difference([".", ".."]))
         valid = True
-        from h5pp.h5p.library.H5PCore import H5PCore
-        whitelist = self.h5pF.getWhitelist(is_library, H5PCore.defaultContentWhitelist,
-                                           H5PCore.defaultLibraryWhitelistExtras)
+        whitelist = self.h5pF.getWhitelist(is_library)
 
         wl_regex = r"^.*\.(" + re.sub(" ", "|", whitelist) + ")$"
 
@@ -114,93 +112,93 @@ class H5PContentValidator:
 
         return valid
 
-    # ##
-    # # Validate given value against number semantics
-    # ##
-    # def validateNumber(self, number, semantics):
-    #     # Validate that number is indeed a number
-    #     if not isinstance(number, int):
-    #         number = 0
-    #
-    #     # Check if number is within valid bounds. Move withing bounds if not.
-    #     if 'min' in semantics and number < semantics['min']:
-    #         number = semantics['min']
-    #     if 'max' in semantics and number > semantics['max']:
-    #         number = semantics['max']
-    #
-    #     # Check if number if withing allowed bounds even if step value is set.
-    #     if 'step' in semantics:
-    #         text_number = number - (semantics['min'] if 'min' in semantics else 0)
-    #         rest = text_number % semantics['step']
-    #         if rest != 0:
-    #             number = number - rest
-    #
-    #     # Check if number has proper number of decimals.
-    #     if 'decimals' in semantics:
-    #         number = round(number, semantics['decimals'])
+    ##
+    # Validate given value against number semantics
+    ##
+    def validateNumber(self, number, semantics):
+        # Validate that number is indeed a number
+        if not isinstance(number, int):
+            number = 0
+
+        # Check if number is within valid bounds. Move withing bounds if not.
+        if 'min' in semantics and number < semantics['min']:
+            number = semantics['min']
+        if 'max' in semantics and number > semantics['max']:
+            number = semantics['max']
+
+        # Check if number if withing allowed bounds even if step value is set.
+        if 'step' in semantics:
+            text_number = number - (semantics['min'] if 'min' in semantics else 0)
+            rest = text_number % semantics['step']
+            if rest != 0:
+                number = number - rest
+
+        # Check if number has proper number of decimals.
+        if 'decimals' in semantics:
+            number = round(number, semantics['decimals'])
 
     ##
     # Validate given value against boolean semantics
     ##
-    def validateBoolean(self, boolean):
+    def validateBoolean(self, boolean, _):
         return isinstance(boolean, bool)
 
-    # ##
-    # # Validate select values
-    # ##
-    # def validateSelect(self, select, semantics):
-    #     optional = semantics['optional'] if 'optional' in semantics else False
-    #     strict = False
-    #     from h5pp.h5p.library.H5PCore import H5PCore
-    #     if 'options' in semantics and not H5PCore.empty(semantics['options']):
-    #         # We have a strict set of options to choose from.
-    #         strict = True
-    #         options = dict()
-    #         for option in semantics['options']:
-    #             options[option['value']] = True
-    #
-    #     if 'multiple' in semantics and semantics['multiple']:
-    #         # Multi-choice generates array of values. Test each one against valid
-    #         # options, if we are strict. First make sure we are working on an
-    #         # array.
-    #         if not isinstance(select, list):
-    #             select = list(select)
-    #
-    #         for key, value in select:
-    #             if strict and not optional and not options[value]:
-    #                 print("Invalid selected option in multi-select.")
-    #                 del select[key]
-    #             else:
-    #                 select[key] = html.escape(value, True)
-    #     else:
-    #         # Single mode. If we get an array in here, we chop off the first
-    #         # element and use that instead.
-    #         if isinstance(select, list):
-    #             select = select[0]
-    #
-    #         if strict and not optional and not options[select]:
-    #             print("Invalid selected option in select.")
-    #             select = semantics[options[0]['value']]
-    #
-    #         select = html.escape(select, True)
+    ##
+    # Validate select values
+    ##
+    def validateSelect(self, select, semantics):
+        optional = semantics['optional'] if 'optional' in semantics else False
+        strict = False
+        from h5pp.h5p.library.H5PCore import H5PCore
+        if 'options' in semantics and not H5PCore.empty(semantics['options']):
+            # We have a strict set of options to choose from.
+            strict = True
+            options = dict()
+            for option in semantics['options']:
+                options[option['value']] = True
 
-    # ##
-    # # Validate given list value against list semantics.
-    # # Will recurse into validating each item in the list according to the type.
-    # ##
-    # def validateList(self, plist, semantics):
-    #     field = semantics['field']
-    #     func = self.typeMap[field['type']]
-    #
-    #     if not isinstance(plist, list):
-    #         plist = list()
-    #
-    #     # Validate each element in list.
-    #     for value in plist:
-    #         eval('self.' + func + '(value, field)')
-    #
-    #     if len(plist) == 0:
-    #         plist = None
+        if 'multiple' in semantics and semantics['multiple']:
+            # Multi-choice generates array of values. Test each one against valid
+            # options, if we are strict. First make sure we are working on an
+            # array.
+            if not isinstance(select, list):
+                select = list(select)
+
+            for key, value in select:
+                if strict and not optional and not options[value]:
+                    print("Invalid selected option in multi-select.")
+                    del select[key]
+                else:
+                    select[key] = html.escape(value, True)
+        else:
+            # Single mode. If we get an array in here, we chop off the first
+            # element and use that instead.
+            if isinstance(select, list):
+                select = select[0]
+
+            if strict and not optional and not options[select]:
+                print("Invalid selected option in select.")
+                select = semantics[options[0]['value']]
+
+            select = html.escape(select, True)
+
+    ##
+    # Validate given list value against list semantics.
+    # Will recurse into validating each item in the list according to the type.
+    ##
+    def validateList(self, plist, semantics):
+        field = semantics['field']
+        func = self.typeMap[field['type']]
+
+        if not isinstance(plist, list):
+            plist = list()
+
+        # Validate each element in list.
+        for value in plist:
+            func(value, field)
+
+        if len(plist) == 0:
+            plist = None
 
     ##
     # Validate a file like object, such as video, image, audio and file.
@@ -287,25 +285,25 @@ class H5PContentValidator:
         if len(semantics['fields']) == 1 and flatten and not is_sub_content:
             field = semantics['fields'][0]
             func = self.typeMap[field['type']]
-            eval('self.' + func + '(group, field)')
+            func(group, field)
         else:
             for key, value in list(group.items()):
                 if is_sub_content and key == 'subContentId':
                     continue
 
                 found = False
-                # foundField = None
+                found_field = None
                 for field in semantics['fields']:
                     if field['name'] == key:
                         if 'optional' in semantics:
                             field['optional'] = True
                         func = self.typeMap[field['type']]
                         found = True
-                        # foundField = field
+                        found_field = field
                         break
                 if found:
                     if func:
-                        eval('self.' + func + '(value, foundField)')
+                        func(value, found_field)
                         if value is None:
                             del key
                     else:
@@ -357,10 +355,10 @@ class H5PContentValidator:
         if not value['library'] in self.libraries:
             lib_spec = self.h5pC.library_from_string(value['library'])
             library = self.h5pC.load_library(
-                lib_spec['machine_name'], lib_spec['majorVersion'], lib_spec['minorVersion']
+                lib_spec['machineName'], lib_spec['majorVersion'], lib_spec['minorVersion']
             )
             library['semantics'] = self.h5pC.load_library_semantics(
-                lib_spec['machine_name'], lib_spec['majorVersion'], lib_spec['minorVersion']
+                lib_spec['machineName'], lib_spec['majorVersion'], lib_spec['minorVersion']
             )
             self.libraries[value['library']] = library
         else:

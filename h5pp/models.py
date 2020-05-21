@@ -102,7 +102,7 @@ class h5p_contents(models.Model):
     embed_type = models.CharField(null=False, default='', max_length=127)
     disable = models.PositiveIntegerField(null=False, default=0)
     main_library_id = models.PositiveIntegerField(null=False,
-                                                  help_text='The library we first instanciate for this content')
+                                                  help_text='The library we first instantiate for this content')
     content_type = models.CharField(null=True, max_length=127, help_text='Content type as defined in h5p.json')
     author = models.CharField(null=True, max_length=127)
     license = models.CharField(null=True, blank=True, max_length=7)

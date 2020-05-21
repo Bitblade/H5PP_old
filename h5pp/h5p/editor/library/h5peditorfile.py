@@ -15,7 +15,7 @@ class H5PEditorFile:
     # Constructor. Process data for file uploaded through the editor
     ##
     def __init__(self, request, files, framework):
-        # TODO Figure out if input sanitazion is needed, especially on 'files'
+        # TODO Figure out if input sanitation is needed, especially on 'files'
 
         if 'field' not in request.POST or request.POST['field'] is None:
             return
@@ -56,7 +56,7 @@ class H5PEditorFile:
         return isinstance(self.result, dict)
 
     ##
-    # Check current file up agains mimes types and extensions in the given list
+    # Check current file up against mimes types and extensions in the given list
     ##
     def check(self, mimes):
         ext = self.extension.lower().replace('.', '')

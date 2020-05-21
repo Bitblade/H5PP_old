@@ -364,7 +364,7 @@ class H5PValidator:
     ##
     # Figure out if the provided file paths exists
     #
-    # Triggers error messages if files doesn"t exist
+    # Triggers error messages if files doesn't exist
     ##
     @staticmethod
     def is_existing_files(files, tmp_dir: Path, library):

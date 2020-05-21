@@ -19,8 +19,7 @@ from django.core import serializers
 
 from h5pp.url_builder import join_url
 
-jsonserializer = serializers.get_serializer("json")
-json_serializer = jsonserializer()
+json_serializer = serializers.get_serializer("json")()
 
 STYLES = ["styles/h5p.css", "styles/h5p-confirmation-dialog.css", "styles/h5p-core-button.css"]
 
@@ -272,10 +271,7 @@ def h5p_get_core_settings(user):
         'ajaxPath': join_url([Site.objects.get_current().domain, settings.H5P_URL, 'ajax']),
         'ajax': {
             'setFinished': join_url([settings.H5P_URL, 'ajax/?setFinished']),
-            'contentUserData': join_url(
-                [settings.H5P_URL,
-                 "ajax/?content-user-data&contentId=:contentId&dataType=:dataType&subContentId=:subContentId"]
-            ),
+            'contentUserData': join_url([settings.H5P_URL, 'ajax/?content-user-data&contentId=:contentId&dataType=:dataType&subContentId=:subContentId']),
         },
         'tokens': {
             'result': create_token('result'),
@@ -672,6 +668,6 @@ def library_to_string(library, folder_name=False):
 # Returns all rows from a cursor as a dict
 ##
 # TODO Remove seemingly unused method
-# def dictfetchall(self, cursor):
+# def dict_fetch_all(self, cursor):
 #     desc = cursor.description
 #     return [dict(list(zip([col[0] for col in desc], row))) for row in cursor.fetchall()]

@@ -125,10 +125,10 @@ def handleContentUserData(request):
 ##
 
 
-def getUserData(contentId, subContentId, dataId, userId):
+def getUserData(content_id, sub_content_id, data_id, user_id):
     try:
         result = h5p_content_user_data.objects.get(
-            user_id=userId, content_main_id=contentId, sub_content_id=subContentId, data_id=dataId
+            user_id=user_id, content_main_id=content_id, sub_content_id=sub_content_id, data_id=data_id
         )
     except:
         result = False
@@ -168,9 +168,9 @@ def saveUserData(contentId, subContentId, dataId, preload, invalidate, data, use
 ##
 
 
-def deleteUserData(contentId, subContentId, dataId, userId):
+def deleteUserData(content_id, sub_content_id, data_id, user_id):
     h5p_content_user_data.objects.get(
-        user_id=userId, content_main_id=contentId, sub_content_id=subContentId, data_id=dataId
+        user_id=user_id, content_main_id=content_id, sub_content_id=sub_content_id, data_id=data_id
     ).delete()
 
 

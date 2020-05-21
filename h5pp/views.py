@@ -125,27 +125,27 @@ class UpdateContentView(FormView):
         return HttpResponseRedirect(self.get_success_url(self.pk_url_kwarg))
 
 
-def createView(request, contentId=None):
+def createView(request, content_id=None):
     if request.user.is_authenticated:
         editor = h5peditorContent(request)
         if request.method == 'POST':
-            if contentId is not None:
+            if content_id is not None:
                 request.POST = request.POST.copy()
-                request.POST['contentId'] = contentId
+                request.POST['contentId'] = content_id
             form = CreateForm(request, request.POST, request.FILES)
             if form.is_valid():
-                if contentId is not None:
-                    return HttpResponseRedirect(reverse("h5pp:h5pcontent", args=[contentId]))
+                if content_id is not None:
+                    return HttpResponseRedirect(reverse("h5pp:h5pcontent", args=[content_id]))
                 else:
                     new_id = h5p_contents.objects.all().order_by('-content_id')[0]
                     return HttpResponseRedirect(reverse("h5pp:h5pcontent", args=[new_id.content_id]))
             return render(request, 'h5p/create.html', {'form': form, 'data': editor})
 
-        elif contentId is not None:
+        elif content_id is not None:
             framework = H5PDjango(request.user)
-            edit = framework.loadContent(contentId)
+            edit = framework.loadContent(content_id)
             request.GET = request.GET.copy()
-            request.GET['contentId'] = contentId
+            request.GET['contentId'] = content_id
             request.GET['json_content'] = edit['params']
             request.GET['h5p_library'] = edit['library_name'] + ' ' + str(edit['library_major_version']) + '.' + str(
                 edit['library_minor_version'])
@@ -224,9 +224,9 @@ def listView(request):
     return render(request, 'h5p/listContents.html', {'status': 'No contents installed.'})
 
 
-def scoreView(request, contentId):
+def scoreView(request, content_id):
     try:
-        content = h5p_contents.objects.get(content_id=contentId)
+        content = h5p_contents.objects.get(content_id=content_id)
     except:
         raise Http404
     if request.user.is_authenticated:
@@ -279,7 +279,7 @@ def scoreView(request, contentId):
 
         return render(request, 'h5p/score.html', {'status': 'No score available yet.', 'content': content})
 
-    return HttpResponseRedirect('/h5p/login/?next=/h5p/score/' + contentId + '/')
+    return HttpResponseRedirect('/h5p/login/?next=/h5p/score/' + content_id + '/')
 
 
 def embedView(request):

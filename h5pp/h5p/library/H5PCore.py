@@ -60,7 +60,7 @@ class H5PCore:
     ##
     # Constructor for the H5PCore
     ##
-    # TODO Remove support for non-functioning devmode
+    # TODO Remove support for non-functioning dev-mode
     def __init__(self, framework, path: Path, url, _0="en",
                  export=False, _1=H5PDevelopment.MODE_NONE):
         self.h5p_framework = framework
@@ -69,14 +69,14 @@ class H5PCore:
 
         self.url = url
         self.exportEnabled = export
-        # TODO Remove support for non-functioning devmode
+        # TODO Remove support for non-functioning dev-mode
         # self.development_mode = development_mode
         self.disableFileCheck = False
 
         # TODO Fix or remove nonfunctional aggregateAssets tech
         # self.aggregateAssets = False  # Off by default.. for now
 
-        # TODO Remove support for non-functioning devmode
+        # TODO Remove support for non-functioning dev-mode
         # if development_mode and H5PDevelopment.MODE_LIBRARY:
         #     self.h5p_development = H5PDevelopment(self.h5p_framework, path, language)
 
@@ -695,21 +695,21 @@ class H5PCore:
         return False
 
     @staticmethod
-    def file_get_contents(filename: Union[Path, str], offset=-1, maxlen=-1):
+    def file_get_contents(filename: Union[Path, str], offset=-1, max_length=-1):
         if not isinstance(filename, Path) and filename.find("://") > 0:
             ret = http.request('GET', filename).read()
             if offset > 0:
                 ret = ret[offset:]
-            if maxlen > 0:
-                ret = ret[:maxlen]
+            if max_length > 0:
+                ret = ret[:max_length]
             return ret
         else:
-            # TODO Replace with pathlib built-ins
+            # TODO Replace with Pathlib built-ins
             fp = open(str(filename), "rb")
             try:
                 if offset > 0:
                     fp.seek(offset)
-                ret = fp.read(maxlen).decode('utf8')
+                ret = fp.read(max_length).decode('utf8')
                 return ret
             finally:
                 fp.close()

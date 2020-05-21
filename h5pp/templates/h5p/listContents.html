@@ -6,7 +6,7 @@
 	{% if listContent %}
 	window.onload = function() {
 		// Initialize the searchbar
-		var searchbar = document.getElementById('searchbar');
+		const searchbar = document.getElementById('searchbar');
 		searchbar.addEventListener("keyup", function(event) {
 			var input, filter, table, tr, td, i;
 			input = document.getElementById("searchbar");
@@ -82,13 +82,13 @@
 		});
 
 		// Initialize the score buttons and tables
-		var score = document.getElementById('score');
-		var manage_buttons = document.getElementsByClassName('manage');
+		const score = document.getElementById('score');
+		const manage_buttons = document.getElementsByClassName('manage');
 		score.addEventListener("click", function(event) {
 			try {
-				var selected = document.getElementsByClassName('success')[0];
-				var id = selected.getElementsByTagName('td')[3].innerText;
-				var scores = document.getElementById(id);
+				const selected = document.getElementsByClassName('success')[0];
+				const id = selected.getElementsByTagName('td')[3].innerText;
+				const scores = document.getElementById(id);
 				if (scores.className == "table table-hover scores-hidden") {
 					scores.className = "table table-hover scores";
 				}else {
@@ -102,8 +102,8 @@
 		for(var i = 0; i < manage_buttons.length; i++) {
 			manage_buttons[i].addEventListener("click", function(event) {
 				try {
-					var selected = document.getElementsByClassName('success')[0];
-					var id = selected.getElementsByTagName('td')[3].innerText;
+					const selected = document.getElementsByClassName('success')[0];
+					const id = selected.getElementsByTagName('td')[3].innerText;
 					window.location = "/h5p/score/" + id + "/";
 				}
 				catch(error) {
@@ -126,19 +126,17 @@
 			To <b>select</b> a content click on its row.
 		</p>
 		<hr>
-		<p>
-			<ul>
-                <li>
-                    <b>As authenticated user </b>:
-			        You can access content by clicking on its title. You can also check your score <span class="glyphicon glyphicon-list-alt"></span> on this content. An empty score table means that you have not seen this content yet
-                </li>
+        <ul>
+            <li>
+                <b>As authenticated user </b>:
+                You can access content by clicking on its title. You can also check your score <span class="glyphicon glyphicon-list-alt"></span> on this content. An empty score table means that you have not seen this content yet
+            </li>
 
-			    <li>
-                    <b>As a content owner </b>:
-			        You can edit <span class="glyphicon glyphicon-wrench"></span> or delete your content <span class="glyphicon glyphicon-erase"></span>. You can also check the score of the users who made the activities of your video and access to the score management page <span class="glyphicon glyphicon-edit"></span>
-                </li>
-            </ul>
-		</p>
+            <li>
+                <b>As a content owner </b>:
+                You can edit <span class="glyphicon glyphicon-wrench"></span> or delete your content <span class="glyphicon glyphicon-erase"></span>. You can also check the score of the users who made the activities of your video and access to the score management page <span class="glyphicon glyphicon-edit"></span>
+            </li>
+        </ul>
 	</div>
 	{% if status %}
 		<div class="alert alert-danger">
@@ -206,7 +204,7 @@
 			<h4>Scores</h4>
 			<i>Select content to see the associated score</i>
 			{% for content in listContent %}
-				<table id={{content.id}} class="table table-hover scores-hidden">
+				<table id="{{content.id}}" class="table table-hover scores-hidden">
 					<thead>
 						<tr class="header">
 							<th style="width:30%;">Username</th>
