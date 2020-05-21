@@ -2,7 +2,7 @@
 
 import collections
 import json
-from datetime import time
+import time
 from pathlib import Path
 
 import requests
@@ -721,6 +721,7 @@ class H5PDjango:
     # library. This means that the content dependencies will have to be rebuilt,
     # and the parameters refiltered
     ##
+    # noinspection PyUnusedLocal
     def clearFilteredParameters(self, library_id):
         # TODO
         return ''
