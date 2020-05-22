@@ -185,7 +185,11 @@ def include_h5p(request):
     content_id = h5p_get_content_id(request)
     embed = determine_embed_type(request.GET['embed_type'], request.GET['main_library']['embedTypes'])
 
-    data = h5p_add_files_and_settings(request, embed)
+    data = h5p_add_files_and_settings(request.user, embed, request.GET.get('title', None),
+                                      request.GET.get('json_content', None), request.GET.get('language', None),
+                                      request.GET.get('main_library', None), request.GET.get('filtered', None),
+                                      request.GET.get('slug', None), content_id)
+
     if embed == 'div':
         html = '<div class="h5p-content" data-content-id="' + content_id + '"></div>'
     else:
@@ -312,20 +316,21 @@ def h5p_get_core_settings(user):
 ##
 # Adds h5p files and settings
 ##
-def h5p_add_files_and_settings(request, embed_type):
-    interface = H5PDjango(request.user)
-    integration = h5p_get_core_settings(request.user)
+def h5p_add_files_and_settings(user, embed_type, title, json_content,
+                               language, main_library, filtered, slug, content_id=None):
+    interface = H5PDjango(user)
+    integration = h5p_get_core_settings(user)
     assets = h5p_add_core_assets()
 
-    if 'json_content' not in request.GET or 'contentId' not in request.GET:
+    if content_id is None or json_content is None:
         return integration
 
-    content = h5p_get_content(request)
+    content = h5p_get_content(title, json_content, language, main_library, filtered, slug, content_id)
     if 'contents' in integration and content['id'] in integration['contents']:
         return integration
 
     integration['contents'] = dict()
-    integration['contents'][str("cid-%s" % content['id'])] = h5p_get_content_settings(request.user, content)
+    integration['contents'][str("cid-%s" % content['id'])] = h5p_get_content_settings(user, content)
 
     core = interface.getCore()
     preloaded_dependencies = core.load_content_dependencies(content['id'], 'preloaded')
@@ -347,7 +352,7 @@ def h5p_add_files_and_settings(request, embed_type):
         integration['loadedCss'] = OVERRIDE_STYLES
 
     elif embed_type == 'iframe':
-        h5p_add_iframe_assets(request, integration, content['id'], files)
+        h5p_add_iframe_assets(user, integration, content['id'], files)
 
     return {
         'integration': json.dumps(integration),
@@ -359,16 +364,19 @@ def h5p_add_files_and_settings(request, embed_type):
 ##
 # Get a content by request
 ##
-def h5p_get_content(request):
-    # interface = H5PDjango(request.user)
-    # core = interface.h5pGetInstance('core')
+# TODO Remove reliance on request...
+def h5p_get_content(title, json_content, language, main_library, filtered, slug, content_id=None):
     return {
-        'id': h5p_get_content_id(request), 'title': request.GET['title'], 'params': request.GET['json_content'],
-        'language': request.GET['language'], 'library': request.GET['main_library'], 'embedType': 'div',
-        'filtered': request.GET['filtered'],
-        'url': join_url([settings.MEDIA_URL, 'h5pp/content/', str(h5p_get_content_id(request)) + '/']),
+        'id': content_id,
+        'title': title,
+        'params': json_content,
+        'language': language,
+        'library': main_library,
+        'embedType': 'div',
+        'filtered': filtered,
+        'url': join_url([settings.MEDIA_URL, 'h5pp/content/', content_id + '/']),
         'displayOptions': '',
-        'slug': request.GET['h5p_slug']
+        'slug': slug
     }
 
 
@@ -461,8 +469,8 @@ def h5p_dependencies_to_library_list(dependencies):
 ##
 # Add the necessary assets for content to run in an iframe
 ##
-def h5p_add_iframe_assets(request, integration, content_id, files):
-    framework = H5PDjango(request.user)
+def h5p_add_iframe_assets(user, integration, content_id, files):
+    framework = H5PDjango(user)
     core = framework.getCore()
 
     assets = h5p_add_core_assets()
@@ -530,7 +538,10 @@ def h5p_embed(request):
 
     integration = h5p_get_core_settings(request.user)
 
-    content = h5p_get_content(request)
+    content = h5p_get_content(
+        request.GET['title'], request.GET['json_content'], request.GET['language'],
+        request.GET['main_library'], request.GET['filtered'], request.GET['slug'],
+        request.GET['content_id'])
 
     integration['contents'] = dict()
     integration['contents']["cid-%s" % content['id']] = h5p_get_content_settings(request.user, content)

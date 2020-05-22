@@ -30,11 +30,13 @@ SCRIPTS = [
 ]
 
 
-def h5peditorContent(request):
+def h5peditorContent(user, content_id=None, title=None, json_content=None, language=None, main_library=None,
+                     filtered=None, slug=None):
     assets = h5p_add_core_assets()
     core_assets = h5p_add_core_assets()
-    editor = h5p_add_files_and_settings(request, True)
-    framework = H5PDjango(request.user)
+    editor = h5p_add_files_and_settings(user, True, title, json_content, language, main_library, filtered,
+                                        slug, content_id)
+    framework = H5PDjango(user)
     add = list()
 
     for style in STYLES:
@@ -68,7 +70,7 @@ def h5peditorContent(request):
         },
         'ajaxPath': "{}editorajax/{}/".format(
             settings.H5P_URL,
-            (request['contentId'] if 'contentId' in request else '0')
+            (0 if content_id is None else content_id)
         ),
         'libraryPath': "{}h5p/h5peditor/".format(settings.STATIC_URL),
         'copyrightSemantics': content_validator.getCopyrightSemantics(),

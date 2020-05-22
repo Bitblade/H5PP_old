@@ -59,7 +59,15 @@ class CreateContentView(CreateView):
 
         """
         ctx = super(CreateContentView, self).get_context_data(**kwargs)
-        ctx["data"] = h5peditorContent(self.request)
+        ctx["data"] = h5peditorContent(self.request.user,
+                                       self.request.GET.get('content_id', None),
+                                       self.request.GET.get('title', None),
+                                       self.request.GET.get('json_content', None),
+                                       self.request.GET.get('language', None),
+                                       self.request.GET.get('main_library', None),
+                                       self.request.GET.get('filtered', None),
+                                       self.request.GET.get('slug', None),
+                                       )
 
         return ctx
 
@@ -78,56 +86,57 @@ class CreateContentView(CreateView):
 
         return HttpResponseRedirect(self.get_success_url(str(new_id.content_id)))
 
-
-class UpdateContentView(FormView):
-    template_name = "h5p/create.html"
-    success_url = "h5pcontent"
-    form_class = CreateForm
-
-    def get_form_kwargs(self):
-        framework = H5PDjango(self.request.user)
-        edit = framework.loadContent(self.kwargs.get("content_id"))
-        self.request.GET = self.request.GET.copy()
-        self.request.GET['contentId'] = self.kwargs.get("content_id")
-        self.request.GET["title"] = edit["title"]
-        self.request.GET["language"] = "en"
-        self.request.GET["filtered"] = edit['filtered']
-        self.request.GET['json_content'] = edit['params']
-        self.request.GET['h5p_slug'] = edit['slug']
-        self.request.GET['h5p_library'] = edit['library_name'] + ' ' + str(edit['library_major_version']) + '.' + str(
-            edit['library_minor_version'])
-        # self.request.GET['main_library'] = self.request.GET["h5p_library"]
-
-        kwargs = {'request': self.request, }
-        return kwargs
-
-    def get_success_url(self, pk):
-        return reverse("h5pcontent", args=[pk])
-
-    def get_context_data(self, **kwargs):
-        """
-        Get the editor for the template
-
-        """
-        ctx = super(UpdateContentView, self).get_context_data(**kwargs)
-        ctx["data"] = h5peditorContent(self.request)
-
-        return ctx
-
-    def post(self, request, *args, **kwargs):
-        form = CreateForm(self.request, self.request.POST, self.request.FILES)
-        if form.is_valid():
-            return self.form_valid(form)
-        else:
-            return self.form_invalid(form)
-
-    def form_valid(self, form):
-        return HttpResponseRedirect(self.get_success_url(self.pk_url_kwarg))
+# TODO Remove unused class after verification
+# class UpdateContentView(FormView):
+#     template_name = "h5p/create.html"
+#     success_url = "h5pcontent"
+#     form_class = CreateForm
+#
+#     def get_form_kwargs(self):
+#         framework = H5PDjango(self.request.user)
+#         edit = framework.loadContent(self.kwargs.get("content_id"))
+#         self.request.GET = self.request.GET.copy()
+#         self.request.GET['contentId'] = self.kwargs.get("content_id")
+#         self.request.GET["title"] = edit["title"]
+#         self.request.GET["language"] = "en"
+#         self.request.GET["filtered"] = edit['filtered']
+#         self.request.GET['json_content'] = edit['params']
+#         self.request.GET['h5p_slug'] = edit['slug']
+#         self.request.GET['h5p_library'] = edit['library_name'] + ' ' + str(edit['library_major_version']) + '.' + str(
+#             edit['library_minor_version'])
+#         # self.request.GET['main_library'] = self.request.GET["h5p_library"]
+#
+#         kwargs = {'request': self.request, }
+#         return kwargs
+#
+#     def get_success_url(self, pk):
+#         return reverse("h5pcontent", args=[pk])
+#
+#     def get_context_data(self, **kwargs):
+#         """
+#         Get the editor for the template
+#
+#         """
+#         ctx = super(UpdateContentView, self).get_context_data(**kwargs)
+#         ctx["data"] = h5peditorContent(self.request)
+#
+#         return ctx
+#
+#     def post(self, request, *args, **kwargs):
+#         form = CreateForm(self.request, self.request.POST, self.request.FILES)
+#         if form.is_valid():
+#             return self.form_valid(form)
+#         else:
+#             return self.form_invalid(form)
+#
+#     def form_valid(self, form):
+#         return HttpResponseRedirect(self.get_success_url(self.pk_url_kwarg))
 
 
 def createView(request, content_id=None):
     if request.user.is_authenticated:
-        editor = h5peditorContent(request)
+        editor = h5peditorContent(request.user, content_id, request.GET.get('title', None))
+
         if request.method == 'POST':
             if content_id is not None:
                 request.POST = request.POST.copy()
@@ -141,7 +150,7 @@ def createView(request, content_id=None):
                     return HttpResponseRedirect(reverse("h5pp:h5pcontent", args=[new_id.content_id]))
             return render(request, 'h5p/create.html', {'form': form, 'data': editor})
 
-        elif content_id is not None:
+        else:
             framework = H5PDjango(request.user)
             edit = framework.loadContent(content_id)
             request.GET = request.GET.copy()
